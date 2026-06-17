@@ -1,0 +1,15 @@
+# --- Web API ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# --- Document parsing engine ---
+docling==2.26.0
+
+# --- Azure Data Lake Storage (Gen2) ---
+# Used by the ADLS storage backend. Safe to install everywhere; only
+# activated when STORAGE_BACKEND=adls.
+azure-storage-file-datalake==12.18.0
+azure-identity==1.19.0

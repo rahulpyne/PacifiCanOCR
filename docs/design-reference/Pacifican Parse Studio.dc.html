@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:#e9edf0;}
+::selection{background:rgba(20,138,130,.18);}
+*::-webkit-scrollbar{width:10px;height:10px;}
+*::-webkit-scrollbar-thumb{background:#c4cfd8;border-radius:6px;}
+*::-webkit-scrollbar-thumb:hover{background:#aebcc8;}
+*::-webkit-scrollbar-track{background:transparent;}
+input::placeholder{color:#9aa6b2;}
+textarea{font-family:inherit;}
+select{appearance:none;-webkit-appearance:none;}
+@keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.15;}}
+</style>
+</helmet>
+<div style="--bg:#e9edf0;--surface:#ffffff;--rail:#26374A;--rail2:#1f2d3d;--navy:#26374A;--ink:#2a2e33;--ink2:#3d4654;--mut:#5e6b78;--dim:#9aa6b2;--line:#dde3e8;--line2:#cad3db;--red:#d3080c;--red-d:#b00609;--link:#2b4d80;--teal:#0e6b66;--teal-br:#138a82;--teal-lt:#6fd0c6;--teal-dim:#e3f1ef;--teal-line:#bfe0db;--violet:#6b4ea8;--green:#2f7d4f;--tealc:#0d8a80;--rose:#c0567a;--gold:#9a7a1a;--slate:#5e6b78;--doc-bg:#101820;--doc-card:#1a242c;--doc-line:#2b3742;--doc-head:#eaf1f5;--doc-body:#b9c6cf;--doc-mut:#8c9aa6;--ui:'Archivo',sans-serif;--mono:'JetBrains Mono',monospace;--serif:'Spectral',serif;font-family:var(--ui);display:flex;flex-direction:column;height:100vh;width:100%;background:var(--bg);color:var(--ink);overflow:hidden;position:relative;">
+
+  <!-- top accent strip -->
+  <div style="height:4px;flex:none;display:flex;background:var(--navy);">
+    <span style="width:78px;background:var(--red);"></span>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0;position:relative;">
+
+  <div style="position:absolute;inset:0;opacity:{{gridOp}};pointer-events:none;background-image:linear-gradient(rgba(38,55,74,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(38,55,74,.05) 1px,transparent 1px);background-size:46px 46px;"></div>
+
+  <!-- ===================== LEFT NAV ===================== -->
+  <aside style="width:228px;flex:none;background:linear-gradient(180deg,#2c3e54,#26374A);border-right:1px solid var(--rail2);display:flex;flex-direction:column;position:relative;z-index:2;">
+    <div style="display:flex;align-items:center;gap:11px;padding:17px 18px 16px;border-bottom:1px solid rgba(255,255,255,.09);">
+      <div style="width:38px;height:38px;flex:none;border-radius:9px;background:#ffffff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.18);">
+        <svg width="25" height="25" viewBox="0 0 100 100" fill="none">
+          <g fill="#0e6b66">
+            <path d="M50 50 C43.5 36.5 44.5 21 53 11 C57.5 23 57.5 37.5 50 50 Z"/>
+            <path d="M50 50 C43.5 36.5 44.5 21 53 11 C57.5 23 57.5 37.5 50 50 Z" transform="rotate(120 50 50)"/>
+            <path d="M50 50 C43.5 36.5 44.5 21 53 11 C57.5 23 57.5 37.5 50 50 Z" transform="rotate(240 50 50)"/>
+          </g>
+          <circle cx="50" cy="50" r="4" fill="#0a4f4b"/>
+        </svg>
+      </div>
+      <div style="line-height:1.05;">
+        <div style="font-size:15px;font-weight:700;letter-spacing:.01em;color:#fff;">PacifiCan</div>
+        <div style="font-size:8.5px;font-family:var(--mono);letter-spacing:.24em;color:var(--teal-lt);margin-top:3px;">PARSE&nbsp;STUDIO</div>
+      </div>
+    </div>
+
+    <nav style="padding:14px 12px;display:flex;flex-direction:column;gap:3px;">
+      <div style="font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;color:rgba(255,255,255,.4);padding:4px 10px 9px;">NAVIGATION</div>
+      <a style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;color:rgba(255,255,255,.72);font-size:13px;text-decoration:none;cursor:pointer;" style-hover="background:rgba(255,255,255,.07);color:#fff">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>Home</a>
+      <a style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;color:#fff;font-size:13px;font-weight:500;text-decoration:none;cursor:pointer;background:rgba(211,8,12,.18);border:1px solid rgba(211,8,12,.45);box-shadow:inset 3px 0 0 var(--red);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b6e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>Documents
+        <span style="margin-left:auto;font-family:var(--mono);font-size:9px;color:#ff8e90;">12</span></a>
+      <a style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;color:rgba(255,255,255,.72);font-size:13px;text-decoration:none;cursor:pointer;" style-hover="background:rgba(255,255,255,.07);color:#fff">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.8 7.8 0 0 0 0-3l1.7-1.3-1.9-3.3-2 .8a7.6 7.6 0 0 0-2.6-1.5l-.3-2.1H8.7l-.3 2.1a7.6 7.6 0 0 0-2.6 1.5l-2-.8L1.9 9.2 3.6 10.5a7.8 7.8 0 0 0 0 3L1.9 14.8l1.9 3.3 2-.8a7.6 7.6 0 0 0 2.6 1.5l.3 2.1h3.6l.3-2.1a7.6 7.6 0 0 0 2.6-1.5l2 .8 1.9-3.3z"/></svg>Settings</a>
+    </nav>
+
+    <div style="margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,.09);">
+      <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.72);">
+        <span style="width:7px;height:7px;border-radius:50%;background:#4fd08a;box-shadow:0 0 7px #4fd08a;animation:pulseDot 2.4s infinite;"></span>
+        ENGINE ONLINE</div>
+      <div style="font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.42);margin-top:7px;">docling-core · v0.6.2 · CA-CENTRAL</div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN COLUMN ===================== -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;position:relative;z-index:2;">
+
+    <!-- top bar -->
+    <header style="height:50px;flex:none;display:flex;align-items:center;padding:0 22px;border-bottom:1px solid var(--line);background:var(--surface);">
+      <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;font-family:var(--mono);">
+        <span style="color:var(--mut);">Studio</span>
+        <span style="color:var(--dim);">/</span>
+        <span style="color:var(--mut);">pacifican-ai-strategy.pdf</span>
+        <span style="color:var(--dim);">/</span>
+        <span style="color:var(--navy);font-weight:600;">Parse</span>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:14px;">
+        <div style="display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;color:var(--mut);"><span style="width:6px;height:6px;border-radius:50%;background:var(--teal-br);box-shadow:0 0 6px rgba(19,138,130,.6);"></span>SECURE&nbsp;·&nbsp;PROTECTED&nbsp;B</div>
+        <button style="display:flex;align-items:center;gap:8px;padding:8px 15px;border-radius:8px;border:1px solid var(--red-d);background:var(--red);color:#fff;font-family:var(--ui);font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(211,8,12,.22);" style-hover="background:var(--red-d)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New analysis</button>
+      </div>
+    </header>
+
+    <!-- file title row -->
+    <div style="flex:none;padding:16px 22px 14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:16px;background:var(--surface);">
+      <div style="width:40px;height:48px;flex:none;border-radius:6px;background:var(--teal-dim);border:1px solid var(--teal-line);display:flex;align-items:center;justify-content:center;position:relative;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>
+        <span style="position:absolute;bottom:-1px;right:-1px;font-family:var(--mono);font-size:6.5px;background:var(--teal);color:#fff;padding:1px 3px;border-radius:3px;font-weight:600;">PDF</span>
+      </div>
+      <div style="min-width:0;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <h1 style="margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em;color:var(--navy);">pacifican-ai-strategy.pdf</h1>
+          <span style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;background:var(--teal-dim);border:1px solid var(--teal-line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--teal);"><span style="width:6px;height:6px;border-radius:50%;background:var(--teal-br);box-shadow:0 0 6px rgba(19,138,130,.6);"></span>PARSED</span>
+        </div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:6px;">640&nbsp;KB&nbsp;·&nbsp;17&nbsp;pages&nbsp;·&nbsp;197&nbsp;nodes&nbsp;·&nbsp;analyzed&nbsp;32&nbsp;minutes&nbsp;ago</div>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:14px;">
+        <button onClick="{{exportJson}}" style="display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;border:1px solid var(--teal);background:var(--teal);color:#fff;font-family:var(--ui);font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:0 1px 4px rgba(14,107,102,.25);" style-hover="background:var(--teal-br)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 11 5 4 5-4"/><path d="M5 20h14"/></svg>Download JSON</button>
+        <button style="display:flex;align-items:center;gap:7px;padding:8px 13px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--mut);font-family:var(--ui);font-size:12.5px;cursor:pointer;" style-hover="color:var(--navy);border-color:var(--teal-br)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/></svg>History</button>
+      </div>
+    </div>
+
+    <!-- layers row -->
+    <div style="flex:none;padding:11px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;background:#f3f5f7;">
+      <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:var(--mut);">LAYERS</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <sc-for list="{{layers}}" as="l" hint-placeholder-count="7">
+          <div data-layer="{{l.type}}" onClick="{{toggleLayer}}" style="display:flex;align-items:center;gap:7px;padding:5px 11px 5px 9px;border:1px solid {{l.border}};border-radius:20px;cursor:pointer;background:{{l.bg}};opacity:{{l.op}};transition:all .15s;" style-hover="border-color:var(--teal-br)">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{l.color}};flex:none;"></span>
+            <span style="font-family:var(--mono);font-size:11px;color:{{l.txc}};">{{l.type}}</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--mut);background:rgba(38,55,74,.06);padding:0 5px;border-radius:9px;">{{l.count}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <button style="margin-left:auto;display:flex;align-items:center;gap:7px;padding:6px 13px;border-radius:8px;border:1px solid var(--teal-line);background:var(--teal-dim);color:var(--teal);font-family:var(--ui);font-size:12px;font-weight:600;cursor:pointer;" style-hover="background:#d4ebe7">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg>Re-run parse</button>
+    </div>
+
+    <!-- ===================== WORKSPACE ===================== -->
+    <div style="flex:1;display:flex;min-height:0;">
+
+      <!-- structure tree -->
+      <section style="width:318px;flex:none;border-right:1px solid var(--line);display:flex;flex-direction:column;background:var(--surface);min-height:0;">
+        <div style="padding:14px 16px 11px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:13px;font-weight:600;color:var(--navy);">Structure</span><span style="font-family:var(--mono);font-size:10.5px;color:var(--mut);">{{nodeCount}} nodes</span></div>
+          <div style="display:flex;gap:5px;">
+            <button style="width:25px;height:25px;border-radius:6px;border:1px solid var(--line2);background:var(--surface);color:var(--mut);cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="color:var(--teal-br);border-color:var(--teal-br)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+            <button style="width:25px;height:25px;border-radius:6px;border:1px solid var(--line2);background:var(--surface);color:var(--mut);cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="color:var(--teal-br);border-color:var(--teal-br)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          </div>
+        </div>
+        <div style="padding:0 16px 12px;">
+          <div style="position:relative;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="1.8" stroke-linecap="round" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+            <input value="{{filterText}}" onInput="{{onFilter}}" placeholder="Filter elements..." style="width:100%;padding:9px 12px 9px 32px;border-radius:8px;border:1px solid var(--line2);background:#f6f8f9;color:var(--ink);font-family:var(--ui);font-size:12.5px;outline:none;" style-focus="border-color:var(--teal-br);background:#fff"/>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:0 8px 16px;">
+          <sc-for list="{{tree}}" as="item" hint-placeholder-count="10">
+            <div data-node="{{item.id}}" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="display:flex;align-items:center;gap:8px;padding:6px 8px 6px {{item.pad}};margin:1px 0;border-radius:7px;cursor:pointer;background:{{item.bg}};border-left:2px solid {{item.edge}};" style-hover="background:#f1f4f6">
+              <span style="width:7px;height:7px;border-radius:50%;flex:none;background:{{item.color}};"></span>
+              <span style="font-family:var(--mono);font-size:9px;letter-spacing:.02em;color:{{item.color}};border:1px solid {{item.tagbd}};padding:1px 5px;border-radius:4px;flex:none;">{{item.type}}</span>
+              <span style="font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;">{{item.text}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- document viewer -->
+      <section style="flex:1;display:flex;flex-direction:column;min-width:0;background:radial-gradient(150% 90% at 50% 0%,#18232c,#0e151b);">
+        <!-- page rail -->
+        <div style="flex:none;display:flex;align-items:center;gap:14px;padding:10px 18px;border-bottom:1px solid var(--doc-line);background:rgba(0,0,0,.22);">
+          <div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:2px;">
+            <sc-for list="{{pages}}" as="p" hint-placeholder-count="17">
+              <button data-page="{{p.n}}" onClick="{{pageClick}}" style="width:28px;height:28px;flex:none;border-radius:7px;border:1px solid {{p.bd}};background:{{p.bg}};color:{{p.col}};font-family:var(--mono);font-size:11px;font-weight:500;cursor:pointer;">{{p.n}}</button>
+            </sc-for>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+            <span style="font-family:var(--mono);font-size:11px;color:var(--mut);white-space:nowrap;">{{pageInd}}</span>
+            <button onClick="{{prevPage}}" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--doc-line);background:#1f2a33;color:var(--doc-mut);cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="color:var(--teal-br);border-color:var(--teal-br)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></button>
+            <button onClick="{{nextPage}}" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--doc-line);background:#1f2a33;color:var(--doc-mut);cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="color:var(--teal-br);border-color:var(--teal-br)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+          </div>
+        </div>
+
+        <!-- scroll surface -->
+        <div style="flex:1;overflow-y:auto;padding:30px;display:flex;justify-content:center;">
+
+          <sc-if value="{{notParse}}" hint-placeholder-val="{{false}}">
+            <div style="margin:auto;text-align:center;max-width:360px;">
+              <div style="width:60px;height:60px;border-radius:14px;border:1px solid var(--teal-line);background:var(--teal-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+              </div>
+              <div style="font-size:16px;font-weight:600;color:var(--navy);">{{tabTitle}}</div>
+              <div style="font-size:12.5px;color:var(--mut);margin-top:8px;line-height:1.6;">{{tabBody}}</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{isParse}}" hint-placeholder-val="{{true}}">
+          <div style="width:680px;max-width:100%;background:var(--doc-card);border:1px solid var(--doc-line);border-radius:6px;position:relative;box-shadow:0 24px 60px -24px rgba(0,0,0,.6);height:max-content;">
+            <!-- corner brackets -->
+            <div style="position:absolute;top:-1px;left:-1px;width:18px;height:18px;border-top:2px solid var(--teal-br);border-left:2px solid var(--teal-br);border-radius:6px 0 0 0;"></div>
+            <div style="position:absolute;bottom:-1px;right:-1px;width:18px;height:18px;border-bottom:2px solid var(--teal-br);border-right:2px solid var(--teal-br);border-radius:0 0 6px 0;"></div>
+
+            <!-- PAGE 1 -->
+            <sc-if value="{{isPage1}}" hint-placeholder-val="{{true}}">
+            <div style="padding:40px 46px 52px;display:flex;flex-direction:column;gap:13px;">
+              <!-- header row -->
+              <div style="display:flex;justify-content:space-between;gap:16px;">
+                <div data-node="n1" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-radius:4px;padding:5px 9px;opacity:{{opac.n1}};box-shadow:{{ring.n1}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:7px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.n1}};background:var(--doc-card);padding:0 4px;">{{typeName.n1}}</span><span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--doc-mut);">{{txt.n1}}</span></div>
+                <div data-node="n2" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-radius:4px;padding:5px 9px;opacity:{{opac.n2}};box-shadow:{{ring.n2}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:7px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.n2}};background:var(--doc-card);padding:0 4px;">{{typeName.n2}}</span><span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--doc-mut);">{{txt.n2}}</span></div>
+              </div>
+              <div style="height:1px;background:var(--doc-line);margin:4px 0 14px;"></div>
+
+              <div data-node="n3" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n3}};border-radius:4px;padding:7px 12px;opacity:{{opac.n3}};box-shadow:{{ring.n3}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.n3}};background:var(--doc-card);padding:0 4px;">{{typeName.n3}}</span><div style="font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--red);text-transform:uppercase;">{{txt.n3}}</div></div>
+
+              <div data-node="n4" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n4}};border-radius:4px;padding:8px 12px;opacity:{{opac.n4}};box-shadow:{{ring.n4}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.n4}};background:var(--doc-card);padding:0 4px;">{{typeName.n4}}</span><div style="font-family:var(--serif);font-size:35px;line-height:1.04;font-weight:600;letter-spacing:-.015em;color:var(--doc-head);">{{txt.n4}}</div></div>
+
+              <div data-node="n5" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n5}};border-radius:4px;padding:9px 12px;margin-top:4px;opacity:{{opac.n5}};box-shadow:{{ring.n5}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.n5}};background:var(--doc-card);padding:0 4px;">{{typeName.n5}}</span><div style="font-family:var(--serif);font-size:15px;line-height:1.62;color:var(--doc-body);">{{txt.n5}}</div></div>
+
+              <div style="height:1px;background:var(--doc-line);margin:14px 0;"></div>
+
+              <!-- meta grid -->
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div data-node="n6" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n6}};border-radius:4px;padding:5px 10px;opacity:{{opac.n6}};box-shadow:{{ring.n6}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--dim);">{{txt.n6}}</div></div>
+                  <div data-node="n7" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n7}};border-radius:4px;padding:6px 10px;opacity:{{opac.n7}};box-shadow:{{ring.n7}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><div style="font-family:var(--serif);font-size:13.5px;line-height:1.4;color:var(--doc-head);">{{txt.n7}}</div></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div data-node="n8" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n8}};border-radius:4px;padding:5px 10px;opacity:{{opac.n8}};box-shadow:{{ring.n8}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--dim);">{{txt.n8}}</div></div>
+                  <div data-node="n9" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n9}};border-radius:4px;padding:6px 10px;opacity:{{opac.n9}};box-shadow:{{ring.n9}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><div style="font-family:var(--serif);font-size:13.5px;line-height:1.4;color:var(--doc-head);">{{txt.n9}}</div></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div data-node="n10" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n10}};border-radius:4px;padding:5px 10px;opacity:{{opac.n10}};box-shadow:{{ring.n10}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--dim);">{{txt.n10}}</div></div>
+                  <div data-node="n11" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n11}};border-radius:4px;padding:6px 10px;opacity:{{opac.n11}};box-shadow:{{ring.n11}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.n11}};background:var(--doc-card);padding:0 4px;">{{typeName.n11}}</span><div style="font-family:var(--serif);font-size:15px;font-weight:600;color:var(--red);">{{txt.n11}}</div></div>
+                  <div data-node="n12" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n12}};border-radius:4px;padding:5px 10px;opacity:{{opac.n12}};box-shadow:{{ring.n12}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><div style="font-family:var(--serif);font-size:12px;font-style:italic;color:var(--doc-mut);">{{txt.n12}}</div></div>
+                </div>
+              </div>
+
+              <div data-node="n14" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n14}};border-radius:4px;padding:6px 10px;margin-top:6px;opacity:{{opac.n14}};box-shadow:{{ring.n14}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><div style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--teal-br);">{{txt.n14}}</div></div>
+
+              <div style="height:1px;background:var(--doc-line);margin:12px 0;"></div>
+
+              <!-- figure -->
+              <div data-node="n16" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n16}};border-radius:4px;padding:8px 12px;opacity:{{opac.n16}};box-shadow:{{ring.n16}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.n16}};background:var(--doc-card);padding:0 4px;">{{typeName.n16}}</span>
+                <div style="border:1px dashed var(--doc-line);border-radius:6px;background:rgba(47,125,79,.08);padding:22px;display:flex;align-items:center;justify-content:center;gap:18px;">
+                  <svg width="220" height="74" viewBox="0 0 220 74" fill="none" stroke-width="1.3"><rect x="8" y="26" width="46" height="22" rx="3" stroke="var(--green)" fill="rgba(47,125,79,.08)"/><rect x="87" y="10" width="46" height="22" rx="3" stroke="var(--green)" fill="rgba(47,125,79,.08)"/><rect x="87" y="42" width="46" height="22" rx="3" stroke="var(--green)" fill="rgba(47,125,79,.08)"/><rect x="166" y="26" width="46" height="22" rx="3" stroke="var(--green)" fill="rgba(47,125,79,.08)"/><path d="M54 37h33M133 21h33M133 53h33" stroke="var(--green)" stroke-dasharray="3 3"/></svg>
+                  <span style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--green);text-transform:uppercase;">image&nbsp;region</span>
+                </div>
+              </div>
+              <div data-node="n15" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.n15}};border-radius:4px;padding:5px 12px;opacity:{{opac.n15}};box-shadow:{{ring.n15}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.n15}};background:var(--doc-card);padding:0 4px;">{{typeName.n15}}</span><div style="font-family:var(--serif);font-size:12px;font-style:italic;color:var(--doc-mut);">{{txt.n15}}</div></div>
+            </div>
+            </sc-if>
+
+            <!-- PAGE 2 -->
+            <sc-if value="{{isPage2}}" hint-placeholder-val="{{false}}">
+            <div style="padding:40px 46px 52px;display:flex;flex-direction:column;gap:13px;">
+              <div data-node="p1" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-radius:4px;padding:5px 9px;opacity:{{opac.p1}};box-shadow:{{ring.p1}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:7px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.p1}};background:var(--doc-card);padding:0 4px;">{{typeName.p1}}</span><span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--doc-mut);">{{txt.p1}}</span></div>
+              <div style="height:1px;background:var(--doc-line);margin:4px 0 14px;"></div>
+              <div data-node="p2" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.p2}};border-radius:4px;padding:7px 12px;opacity:{{opac.p2}};box-shadow:{{ring.p2}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.p2}};background:var(--doc-card);padding:0 4px;">{{typeName.p2}}</span><div style="font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--red);">{{txt.p2}}</div></div>
+              <div data-node="p3" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.p3}};border-radius:4px;padding:8px 12px;opacity:{{opac.p3}};box-shadow:{{ring.p3}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.p3}};background:var(--doc-card);padding:0 4px;">{{typeName.p3}}</span><div style="font-family:var(--serif);font-size:30px;line-height:1.08;font-weight:600;letter-spacing:-.015em;color:var(--doc-head);">{{txt.p3}}</div></div>
+              <div data-node="p4" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.p4}};border-radius:4px;padding:9px 12px;margin-top:4px;opacity:{{opac.p4}};box-shadow:{{ring.p4}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.p4}};background:var(--doc-card);padding:0 4px;">{{typeName.p4}}</span><div style="font-family:var(--serif);font-size:15px;line-height:1.62;color:var(--doc-body);">{{txt.p4}}</div></div>
+              <div data-node="p5" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.p5}};border-radius:4px;padding:9px 12px;opacity:{{opac.p5}};box-shadow:{{ring.p5}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><div style="font-family:var(--serif);font-size:15px;line-height:1.62;color:var(--doc-body);">{{txt.p5}}</div></div>
+              <div data-node="p6" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.p6}};border-radius:4px;padding:9px 12px;opacity:{{opac.p6}};box-shadow:{{ring.p6}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><div style="font-family:var(--serif);font-size:15px;line-height:1.62;color:var(--doc-body);">{{txt.p6}}</div></div>
+              <div data-node="p7" onClick="{{selNode}}" onMouseEnter="{{hovNode}}" onMouseLeave="{{unhovNode}}" style="position:relative;cursor:pointer;border:1px solid transparent;border-left:2px solid {{accent.p7}};border-radius:4px;padding:10px 12px;margin-top:4px;opacity:{{opac.p7}};box-shadow:{{ring.p7}};transition:box-shadow .15s,background .15s;" style-hover="background:rgba(47,214,201,.1)"><span style="position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:{{accent.p7}};background:var(--doc-card);padding:0 4px;">{{typeName.p7}}</span><div style="display:flex;gap:10px;font-family:var(--serif);font-size:14px;line-height:1.55;color:var(--doc-body);"><span style="color:var(--tealc);">—</span><span>{{txt.p7}}</span></div></div>
+            </div>
+            </sc-if>
+
+            <!-- OTHER PAGES -->
+            <sc-if value="{{isOther}}" hint-placeholder-val="{{false}}">
+            <div style="padding:80px 46px;text-align:center;">
+              <div style="font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;">page {{pageNum}} · 17</div>
+              <div style="margin:18px auto 0;max-width:420px;display:flex;flex-direction:column;gap:11px;">
+                <div style="height:14px;width:60%;border-radius:3px;background:#33414c;"></div>
+                <div style="height:10px;width:100%;border-radius:3px;background:#243039;"></div>
+                <div style="height:10px;width:94%;border-radius:3px;background:#243039;"></div>
+                <div style="height:10px;width:88%;border-radius:3px;background:#243039;"></div>
+                <div style="height:10px;width:50%;border-radius:3px;background:#243039;"></div>
+              </div>
+              <div style="font-size:12px;color:var(--doc-mut);margin-top:26px;">Open this page in the viewer to load its parsed nodes.</div>
+            </div>
+            </sc-if>
+          </div>
+          </sc-if>
+
+        </div>
+      </section>
+
+      <!-- ===================== PROPERTIES PANEL ===================== -->
+      <aside style="width:340px;flex:none;border-left:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;min-height:0;">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:13px;font-weight:600;color:var(--navy);">Properties</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--dim);">INSPECTOR</span>
+        </div>
+
+        <sc-if value="{{hasSel}}" hint-placeholder-val="{{false}}">
+        <div style="flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:18px;">
+          <!-- node identity -->
+          <div style="border:1px solid var(--line);border-radius:10px;background:#f6f8f9;padding:14px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,{{selColor}},transparent);"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:{{selColor}};border:1px solid {{selColor}};padding:3px 9px;border-radius:6px;"><span style="width:7px;height:7px;border-radius:50%;background:{{selColor}};"></span>{{selType}}</span>
+              <span style="font-family:var(--mono);font-size:10.5px;color:var(--mut);">node :: {{selId}}</span>
+            </div>
+            <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+              <div style="background:#fff;border:1px solid var(--line);border-radius:7px;padding:8px 10px;"><div style="font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--dim);">PAGE</div><div style="font-family:var(--mono);font-size:13px;color:var(--ink);margin-top:3px;">{{selPage}} / 17</div></div>
+              <div style="background:#fff;border:1px solid var(--line);border-radius:7px;padding:8px 10px;"><div style="font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--dim);">READING ORDER</div><div style="font-family:var(--mono);font-size:13px;color:var(--ink);margin-top:3px;">#{{selOrder}}</div></div>
+            </div>
+            <div style="margin-top:9px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:8px 10px;"><div style="font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--dim);">BOUNDING BOX</div><div style="font-family:var(--mono);font-size:11.5px;color:var(--teal);margin-top:3px;">{{selBbox}}</div></div>
+          </div>
+
+          <!-- confidence -->
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;"><span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--mut);">OCR CONFIDENCE</span><span style="font-family:var(--mono);font-size:12px;color:var(--teal);">{{selConfW}}</span></div>
+            <div style="height:6px;border-radius:6px;background:#eef1f4;border:1px solid var(--line);overflow:hidden;"><div style="height:100%;width:{{selConfW}};background:linear-gradient(90deg,var(--teal),var(--teal-br));"></div></div>
+          </div>
+
+          <!-- editable: type -->
+          <div>
+            <label style="display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--mut);margin-bottom:8px;">ELEMENT TYPE</label>
+            <div style="position:relative;">
+              <select value="{{selType}}" onChange="{{updateType}}" style="width:100%;padding:10px 34px 10px 12px;border-radius:8px;border:1px solid var(--line2);background:#f6f8f9;color:var(--ink);font-family:var(--ui);font-size:13px;outline:none;cursor:pointer;" style-focus="border-color:var(--teal-br);background:#fff">
+                <option value="section_header">section_header</option>
+                <option value="text">text</option>
+                <option value="table">table</option>
+                <option value="picture">picture</option>
+                <option value="list">list</option>
+                <option value="formula">formula</option>
+                <option value="caption">caption</option>
+                <option value="page_header">page_header</option>
+              </select>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+
+          <!-- editable: content -->
+          <div>
+            <label style="display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--mut);margin-bottom:8px;">EXTRACTED CONTENT</label>
+            <textarea value="{{selText}}" onInput="{{updateText}}" rows="6" style="width:100%;padding:11px 12px;border-radius:8px;border:1px solid var(--line2);background:#f6f8f9;color:var(--ink);font-family:var(--serif);font-size:13.5px;line-height:1.55;outline:none;resize:vertical;" style-focus="border-color:var(--teal-br);background:#fff"></textarea>
+            <div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:6px;">Edits sync to the document region in real time.</div>
+          </div>
+
+          <!-- actions -->
+          <div style="display:flex;gap:9px;margin-top:2px;">
+            <button onClick="{{applyChanges}}" style="flex:1;padding:11px;border-radius:8px;border:1px solid {{applyBd}};background:{{applyBg}};color:#fff;font-family:var(--ui);font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;" style-hover="filter:brightness(1.06)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{{applyLabel}}</button>
+            <button onClick="{{deleteNode}}" style="padding:11px 13px;border-radius:8px;border:1px solid #e3b6bc;background:#fbeef0;color:var(--red);font-family:var(--ui);font-size:12.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;" style-hover="background:#f7dee1">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{noSel}}" hint-placeholder-val="{{true}}">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;">
+          <div style="width:74px;height:74px;position:relative;margin-bottom:20px;">
+            <div style="position:absolute;inset:0;border:1px solid var(--line2);border-radius:14px;"></div>
+            <div style="position:absolute;top:8px;left:8px;width:14px;height:14px;border-top:2px solid var(--teal-br);border-left:2px solid var(--teal-br);"></div>
+            <div style="position:absolute;top:8px;right:8px;width:14px;height:14px;border-top:2px solid var(--teal-br);border-right:2px solid var(--teal-br);"></div>
+            <div style="position:absolute;bottom:8px;left:8px;width:14px;height:14px;border-bottom:2px solid var(--teal-br);border-left:2px solid var(--teal-br);"></div>
+            <div style="position:absolute;bottom:8px;right:8px;width:14px;height:14px;border-bottom:2px solid var(--teal-br);border-right:2px solid var(--teal-br);"></div>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:9px;height:9px;border-radius:50%;background:var(--teal-br);box-shadow:0 0 12px rgba(19,138,130,.6);animation:blink 1.8s infinite;"></div>
+          </div>
+          <div style="font-size:14px;font-weight:600;color:var(--navy);">No region selected</div>
+          <div style="font-size:12.5px;color:var(--mut);margin-top:8px;line-height:1.6;max-width:240px;">Select a node in the structure tree or click a highlighted region in the document to inspect and edit it.</div>
+        </div>
+        </sc-if>
+      </aside>
+
+    </div>
+  </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:860},&quot;enableGlow&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;showGrid&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;liveEdit&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = {
+    currentPage: 1,
+    selectedId: null,
+    hoveredId: null,
+    activeTab: 'parse',
+    filterText: '',
+    hiddenLayers: [],
+    saved: false,
+    draft: '',
+    nodes: [
+      { id:'n1', page:1, type:'page_header', text:'PACIFICAN · STRATEGIC BRIEF', conf:99 },
+      { id:'n2', page:1, type:'page_header', text:'VOL. 01 · CONFIDENTIAL DRAFT · MAY 2026', conf:98 },
+      { id:'n3', page:1, type:'section_header', text:'— An AI Digital Transformation Strategy', conf:97 },
+      { id:'n4', page:1, type:'section_header', text:'Central Intelligence for a Federal Agency.', conf:99 },
+      { id:'n5', page:1, type:'text', text:"A two-architecture, four-phase plan to make AI the connective tissue across PacifiCan's funding, claims, HR and program operations — built on Azure, governed for Protected B, and engineered to keep British Columbians' data inside Canada.", conf:96 },
+      { id:'n6', page:1, type:'text', text:'PREPARED FOR', conf:99 },
+      { id:'n7', page:1, type:'text', text:'Executive Leadership · Pacific Economic Development Canada', conf:98 },
+      { id:'n8', page:1, type:'text', text:'PREPARED BY', conf:99 },
+      { id:'n9', page:1, type:'text', text:'Office of the AI & Digital Transformation Strategist', conf:97 },
+      { id:'n10', page:1, type:'text', text:'CLASSIFICATION', conf:99 },
+      { id:'n11', page:1, type:'section_header', text:'Unclassified', conf:99 },
+      { id:'n12', page:1, type:'text', text:'(architecture for Protected B workloads)', conf:95 },
+      { id:'n14', page:1, type:'text', text:'HORIZON · 24 months · Q3 FY26 → Q2 FY28', conf:98 },
+      { id:'n16', page:1, type:'picture', text:'System architecture diagram', conf:91 },
+      { id:'n15', page:1, type:'caption', text:'Figure 0.1 — Operating model at a glance', conf:94 },
+      { id:'p1', page:2, type:'page_header', text:'PACIFICAN · STRATEGIC BRIEF', conf:99 },
+      { id:'p2', page:2, type:'section_header', text:'01 / 08', conf:99 },
+      { id:'p3', page:2, type:'section_header', text:'The premise, in one breath.', conf:98 },
+      { id:'p4', page:2, type:'text', text:'PacifiCan today runs on people, PDFs, and portals — capacity that does not scale with demand.', conf:96 },
+      { id:'p5', page:2, type:'text', text:'The agency operates a portfolio of programs whose intake, adjudication, and reporting are largely manual.', conf:95 },
+      { id:'p6', page:2, type:'text', text:'We propose that PacifiCan adopt AI not as a tool, but as shared infrastructure — governed, bilingual, and accountable.', conf:97 },
+      { id:'p7', page:2, type:'list', text:'Three constraints are non-negotiable: Protected B residency, bilingual delivery, and human-in-the-loop adjudication.', conf:93 },
+    ],
+  };
+
+  COL = {
+    page_header:'var(--slate)', section_header:'var(--red)', text:'var(--link)',
+    table:'var(--violet)', picture:'var(--green)', list:'var(--tealc)',
+    formula:'var(--rose)', caption:'var(--gold)'
+  };
+
+  selNode = (e) => {
+    const id = e.currentTarget.dataset.node;
+    const n = this.state.nodes.find(x => x.id === id);
+    this.setState({ selectedId:id, draft: n ? n.text : '', saved:false });
+  };
+  hovNode = (e) => { this.setState({ hoveredId: e.currentTarget.dataset.node }); };
+  unhovNode = (e) => {
+    const id = e.currentTarget.dataset.node;
+    if (this.state.hoveredId === id) this.setState({ hoveredId:null });
+  };
+
+  toggleLayer = (e) => {
+    const t = e.currentTarget.dataset.layer;
+    this.setState(s => ({
+      hiddenLayers: s.hiddenLayers.includes(t)
+        ? s.hiddenLayers.filter(x => x !== t)
+        : [...s.hiddenLayers, t]
+    }));
+  };
+
+  pageClick = (e) => {
+    this.setState({ currentPage: Number(e.currentTarget.dataset.page), selectedId:null });
+  };
+  prevPage = () => this.setState(s => ({ currentPage: Math.max(1, s.currentPage-1), selectedId:null }));
+  nextPage = () => this.setState(s => ({ currentPage: Math.min(17, s.currentPage+1), selectedId:null }));
+
+  setTab = (e) => this.setState({ activeTab: e.currentTarget.dataset.tab });
+  onFilter = (e) => this.setState({ filterText: e.target.value });
+
+  updateText = (e) => {
+    const v = e.target.value;
+    const live = this.props.liveEdit !== false;
+    this.setState(s => ({
+      draft: v, saved:false,
+      nodes: live ? s.nodes.map(n => n.id === s.selectedId ? { ...n, text:v } : n) : s.nodes
+    }));
+  };
+  updateType = (e) => {
+    const v = e.target.value;
+    this.setState(s => ({ nodes: s.nodes.map(n => n.id === s.selectedId ? { ...n, type:v } : n) }));
+  };
+  applyChanges = () => {
+    this.setState(s => ({ nodes: s.nodes.map(n => n.id === s.selectedId ? { ...n, text:s.draft } : n), saved:true }));
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ saved:false }), 1600);
+  };
+  deleteNode = () => {
+    this.setState(s => ({ nodes: s.nodes.filter(n => n.id !== s.selectedId), selectedId:null }));
+  };
+  exportJson = () => {
+    const payload = {
+      document: 'pacifican-ai-strategy.pdf',
+      classification: 'Protected B',
+      pages: 17,
+      node_count: this.state.nodes.length,
+      exported_at: new Date().toISOString(),
+      nodes: this.state.nodes.map((n, i) => ({
+        id: n.id, reading_order: i + 1, page: n.page,
+        type: n.type, confidence: n.conf / 100, text: n.text
+      }))
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'pacifican-ai-strategy.parsed.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  };
+
+  renderVals() {
+    const S = this.state;
+    const COL = this.COL;
+    const glow = this.props.enableGlow !== false;
+
+    const txt={}, ring={}, accent={}, typeName={}, opac={};
+    S.nodes.forEach(n => {
+      txt[n.id] = n.text;
+      typeName[n.id] = n.type;
+      accent[n.id] = COL[n.type] || 'var(--teal)';
+      opac[n.id] = S.hiddenLayers.includes(n.type) ? 0.2 : 1;
+      ring[n.id] = S.selectedId === n.id
+        ? (glow ? '0 0 0 1.5px var(--teal-br), 0 0 16px rgba(19,138,130,.28)' : '0 0 0 1.5px var(--teal-br)')
+        : S.hoveredId === n.id ? '0 0 0 1px var(--teal-br)' : 'none';
+    });
+
+    const pageNodes = S.nodes.filter(n => n.page === S.currentPage);
+    const ft = S.filterText.trim().toLowerCase();
+    const tree = pageNodes
+      .filter(n => !S.hiddenLayers.includes(n.type) && (!ft || n.text.toLowerCase().includes(ft) || n.type.includes(ft)))
+      .map(n => ({
+        id:n.id, type:n.type, text:n.text, color: COL[n.type],
+        pad: (n.type==='text'||n.type==='caption') ? '26px' : '10px',
+        tagbd: 'var(--line)',
+        bg: S.selectedId===n.id ? 'var(--teal-dim)' : 'transparent',
+        edge: S.selectedId===n.id ? 'var(--teal-br)' : 'transparent'
+      }));
+
+    const order = ['section_header','text','table','picture','list','formula','caption','page_header'];
+    const layers = order.map(t => {
+      const count = pageNodes.filter(n => n.type===t).length;
+      const active = !S.hiddenLayers.includes(t);
+      return { type:t, count, color:COL[t],
+        border: active ? 'var(--line2)' : 'var(--line)',
+        bg: active ? '#ffffff' : 'transparent',
+        op: active ? 1 : 0.45,
+        txc: active ? 'var(--ink2)' : 'var(--dim)' };
+    });
+
+    const pages = [];
+    for (let i=1;i<=17;i++) pages.push({
+      n:i, active:i===S.currentPage,
+      bg: i===S.currentPage ? 'var(--teal-br)' : '#1f2a33',
+      col: i===S.currentPage ? '#fff' : 'var(--doc-mut)',
+      bd: i===S.currentPage ? 'var(--teal-br)' : 'var(--doc-line)'
+    });
+
+    const tabBg = (t) => S.activeTab===t ? 'var(--navy)' : 'transparent';
+    const tabCol = (t) => S.activeTab===t ? '#fff' : 'var(--mut)';
+
+    const sel = S.nodes.find(n => n.id===S.selectedId) || null;
+    let selVals = {};
+    if (sel) {
+      const ord = pageNodes.findIndex(n => n.id===sel.id) + 1;
+      const x = 72, y = 96 + ord*30;
+      selVals = {
+        selId: sel.id, selType: sel.type, selText: S.draft, selPage: sel.page,
+        selColor: COL[sel.type], selConf: sel.conf, selConfW: sel.conf + '%',
+        selOrder: ord, selBbox: `x ${x} · y ${y} · 464 × 24`
+      };
+    }
+
+    const tabInfo = {
+      chunk: { title:'Chunking module', body:'Segment the parsed document into retrieval-ready chunks. Parsing is complete — configure chunk size and overlap to continue.' },
+      ingest: { title:'Ingest module', body:'Embed and write chunks into a vector store. Select a destination store to begin ingestion of the 197 parsed nodes.' }
+    };
+    const ti = tabInfo[S.activeTab] || {};
+
+    return {
+      txt, ring, accent, typeName, opac, tree, layers, pages,
+      selNode:this.selNode, hovNode:this.hovNode, unhovNode:this.unhovNode,
+      toggleLayer:this.toggleLayer, pageClick:this.pageClick,
+      updateText:this.updateText, updateType:this.updateType,
+      applyChanges:this.applyChanges, deleteNode:this.deleteNode,
+      prevPage:this.prevPage, nextPage:this.nextPage, onFilter:this.onFilter, setTab:this.setTab, exportJson:this.exportJson,
+      filterText: S.filterText, nodeCount: pageNodes.length,
+      pageInd: `Page ${S.currentPage} of 17`, pageNum: S.currentPage,
+      hasSel: !!sel, noSel: !sel,
+      isParse: S.activeTab==='parse', notParse: S.activeTab!=='parse',
+      isPage1: S.activeTab==='parse' && S.currentPage===1,
+      isPage2: S.activeTab==='parse' && S.currentPage===2,
+      isOther: S.activeTab==='parse' && S.currentPage>2,
+      tabParseBg: tabBg('parse'), tabParseCol: tabCol('parse'),
+      tabChunkBg: tabBg('chunk'), tabChunkCol: tabCol('chunk'),
+      tabIngestBg: tabBg('ingest'), tabIngestCol: tabCol('ingest'),
+      tabTitle: ti.title, tabBody: ti.body,
+      gridOp: this.props.showGrid === false ? 0 : 1,
+      applyLabel: S.saved ? 'Saved' : 'Apply changes',
+      applyBg: S.saved ? 'var(--green)' : 'var(--teal)',
+      applyBd: S.saved ? '#256b42' : 'var(--teal)',
+      ...selVals
+    };
+  }
+}
+</script>
+</body>
+</html>
