@@ -1,7 +1,13 @@
-import { NODE_COLORS, type DocNode } from "../types";
+import { NODE_COLORS, type DocNode, type PageImage } from "../types";
 import { ChevronLeft, ChevronRight, Grid } from "./Icons";
 
 type Tab = "parse" | "chunk" | "ingest";
+type ViewMode = "layout" | "text";
+
+/** Translucent fill from a node-type CSS color var (used for overlay boxes). */
+function fillFor(type: DocNode["type"], pct: number): string {
+  return `color-mix(in srgb, ${NODE_COLORS[type]} ${pct}%, transparent)`;
+}
 
 /** Visual styling per node type inside the dark document canvas. */
 function nodeStyle(type: DocNode["type"]): React.CSSProperties {
@@ -26,6 +32,8 @@ export function DocumentViewer({
   pageNodes,
   pages,
   currentPage,
+  pageImage,
+  viewMode,
   selectedId,
   hoveredId,
   hiddenLayers,
@@ -36,11 +44,14 @@ export function DocumentViewer({
   onPage,
   onPrev,
   onNext,
+  onViewMode,
 }: {
   tab: Tab;
   pageNodes: DocNode[];
   pages: number;
   currentPage: number;
+  pageImage?: PageImage | null;
+  viewMode: ViewMode;
   selectedId: string | null;
   hoveredId: string | null;
   hiddenLayers: string[];
@@ -51,7 +62,10 @@ export function DocumentViewer({
   onPage: (n: number) => void;
   onPrev: () => void;
   onNext: () => void;
+  onViewMode: (m: ViewMode) => void;
 }) {
+  const hasLayout = !!pageImage?.image;
+  const showLayout = viewMode === "layout" && hasLayout;
   return (
     <section
       style={{
@@ -101,6 +115,31 @@ export function DocumentViewer({
           })}
         </div>
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
+          {hasLayout && (
+            <div style={{ display: "flex", gap: 3, background: "#eef1f4", padding: 3, borderRadius: 8 }}>
+              {(["layout", "text"] as ViewMode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => onViewMode(m)}
+                  style={{
+                    padding: "4px 11px",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontFamily: "var(--mono)",
+                    fontSize: 10.5,
+                    letterSpacing: ".04em",
+                    textTransform: "uppercase",
+                    fontWeight: viewMode === m ? 600 : 500,
+                    background: viewMode === m ? "var(--navy)" : "transparent",
+                    color: viewMode === m ? "#fff" : "var(--mut)",
+                  }}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          )}
           <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--mut)", whiteSpace: "nowrap" }}>
             Page {currentPage} of {pages}
           </span>
@@ -117,6 +156,17 @@ export function DocumentViewer({
       <div style={{ flex: 1, overflowY: "auto", padding: 30, display: "flex", justifyContent: "center" }}>
         {tab !== "parse" ? (
           <ModulePlaceholder tab={tab} />
+        ) : showLayout ? (
+          <LayoutView
+            page={pageImage as PageImage}
+            nodes={pageNodes}
+            selectedId={selectedId}
+            hoveredId={hoveredId}
+            hiddenLayers={hiddenLayers}
+            enableGlow={enableGlow}
+            onSelect={onSelect}
+            onHover={onHover}
+          />
         ) : (
           <div
             style={{
@@ -222,6 +272,116 @@ export function DocumentViewer({
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * Original-document view: the rendered page bitmap with absolutely-positioned,
+ * labeled bounding boxes per node. Boxes are placed as percentages of the page's
+ * point dimensions so they scale with the image at any width.
+ */
+function LayoutView({
+  page,
+  nodes,
+  selectedId,
+  hoveredId,
+  hiddenLayers,
+  enableGlow,
+  onSelect,
+  onHover,
+}: {
+  page: PageImage;
+  nodes: DocNode[];
+  selectedId: string | null;
+  hoveredId: string | null;
+  hiddenLayers: string[];
+  enableGlow: boolean;
+  onSelect: (id: string) => void;
+  onHover: (id: string | null) => void;
+}) {
+  const W = page.width || 1;
+  const H = page.height || 1;
+  return (
+    <div
+      style={{
+        width: 720,
+        maxWidth: "100%",
+        background: "var(--doc-card)",
+        border: "1px solid var(--doc-line)",
+        borderRadius: 6,
+        position: "relative",
+        boxShadow: "0 24px 60px -24px rgba(0,0,0,.6)",
+        height: "max-content",
+        padding: 16,
+      }}
+    >
+      <Corner pos="tl" />
+      <Corner pos="br" />
+      {/* image box — overlays are positioned relative to this wrapper */}
+      <div style={{ position: "relative", lineHeight: 0 }}>
+        <img
+          src={page.image as string}
+          alt={`Page ${page.page_no}`}
+          style={{ display: "block", width: "100%", height: "auto", borderRadius: 2 }}
+        />
+        {nodes.map((n) => {
+          if (!n.bbox) return null;
+          const dim = hiddenLayers.includes(n.type);
+          const sel = selectedId === n.id;
+          const hov = hoveredId === n.id;
+          const accent = NODE_COLORS[n.type];
+          const left = (n.bbox.x / W) * 100;
+          const top = (n.bbox.y / H) * 100;
+          const w = (n.bbox.width / W) * 100;
+          const h = (n.bbox.height / H) * 100;
+          return (
+            <div
+              key={n.id}
+              onClick={() => onSelect(n.id)}
+              onMouseEnter={() => onHover(n.id)}
+              onMouseLeave={() => onHover(null)}
+              style={{
+                position: "absolute",
+                left: `${left}%`,
+                top: `${top}%`,
+                width: `${w}%`,
+                height: `${h}%`,
+                border: `1.5px solid ${accent}`,
+                borderRadius: 2,
+                background: sel ? fillFor(n.type, 18) : hov ? fillFor(n.type, 9) : "transparent",
+                boxShadow: sel && enableGlow ? `0 0 10px ${fillFor(n.type, 45)}` : "none",
+                opacity: dim ? 0.12 : 1,
+                cursor: "pointer",
+                transition: "background .12s, opacity .12s",
+                zIndex: sel || hov ? 3 : 1,
+              }}
+            >
+              <span
+                style={{
+                  position: "absolute",
+                  top: -13,
+                  left: -1.5,
+                  fontFamily: "var(--mono)",
+                  fontSize: 8,
+                  lineHeight: "12px",
+                  letterSpacing: ".06em",
+                  textTransform: "uppercase",
+                  color: "#fff",
+                  background: accent,
+                  padding: "0 4px",
+                  borderRadius: "2px 2px 0 0",
+                  whiteSpace: "nowrap",
+                  pointerEvents: "none",
+                  opacity: dim ? 0 : 1,
+                }}
+              >
+                {n.type}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

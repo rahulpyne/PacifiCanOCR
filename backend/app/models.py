@@ -63,8 +63,21 @@ class DocumentSummary(BaseModel):
     json_path: Optional[str] = None
 
 
+class PageImage(BaseModel):
+    """A rendered page bitmap + its point dimensions for layout overlays.
+
+    ``width``/``height`` are in PDF points; node bboxes use the same space so the
+    frontend can position overlay boxes as percentages of the page image.
+    """
+    page_no: int
+    width: float
+    height: float
+    image: Optional[str] = None
+
+
 class DocumentDetail(DocumentSummary):
     nodes: list[Node] = Field(default_factory=list)
+    page_images: list[PageImage] = Field(default_factory=list)
 
 
 # ---- request bodies ----

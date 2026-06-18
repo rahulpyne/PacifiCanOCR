@@ -61,6 +61,9 @@ def _converter(do_ocr: bool):
     # Without this docling emits a "image not available" placeholder instead.
     pipeline_options.generate_picture_images = True
     pipeline_options.images_scale = s.docling_image_scale
+    # Render a full bitmap of each page so the UI can show the original layout
+    # with bounding-box overlays (docling-Studio style).
+    pipeline_options.generate_page_images = True
     # Point docling (incl. EasyOCR) at the models baked into the image so it
     # never fetches from HuggingFace at runtime.
     if s.docling_artifacts_path:
@@ -122,8 +125,57 @@ def _label_to_type(label: Any) -> str:
     return _LABEL_MAP.get(str(raw).lower(), "text")
 
 
-def _extract_bbox(item: Any) -> tuple[int, BBox | None]:
-    """Return (page_no, bbox) from an item's first provenance entry."""
+def _page_data_uri(page: Any) -> str | None:
+    """Base64 PNG data URI of a full page bitmap, or None."""
+    img = getattr(page, "image", None)
+    pil = getattr(img, "pil_image", None) if img is not None else None
+    if pil is None:
+        return None
+    try:
+        import base64
+        import io as _io
+
+        buf = _io.BytesIO()
+        pil.save(buf, format="PNG")
+        return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+    except Exception:
+        return None
+
+
+def _build_pages(doc: Any) -> tuple[list[dict[str, Any]], dict[int, float]]:
+    """Return (page metadata list, {page_no: height}) for layout rendering.
+
+    Each page entry carries its point dimensions and a rendered bitmap so the
+    frontend can overlay bounding boxes (expressed in the same point space).
+    """
+    pages: list[dict[str, Any]] = []
+    heights: dict[int, float] = {}
+    raw = getattr(doc, "pages", None) or {}
+    items = raw.items() if hasattr(raw, "items") else enumerate(raw, start=1)
+    for pno, page in items:
+        size = getattr(page, "size", None)
+        w = float(getattr(size, "width", 0.0) or 0.0)
+        h = float(getattr(size, "height", 0.0) or 0.0)
+        heights[int(pno)] = h
+        pages.append(
+            {
+                "page_no": int(pno),
+                "width": round(w, 1),
+                "height": round(h, 1),
+                "image": _page_data_uri(page),
+            }
+        )
+    pages.sort(key=lambda p: p["page_no"])
+    return pages, heights
+
+
+def _extract_bbox(item: Any, page_heights: dict[int, float]) -> tuple[int, BBox | None]:
+    """Return (page_no, bbox) with the bbox normalized to TOP-LEFT origin.
+
+    docling provenance bboxes for PDFs are usually BOTTOM-LEFT (y grows upward).
+    The UI overlays boxes on a top-down page image, so we flip y using the page
+    height. Output x/y is the top-left corner in the page's point coordinates.
+    """
     prov = getattr(item, "prov", None)
     if not prov:
         return 1, None
@@ -134,12 +186,18 @@ def _extract_bbox(item: Any) -> tuple[int, BBox | None]:
         return page_no, None
     try:
         left = float(getattr(bb, "l", 0.0))
-        top = float(getattr(bb, "t", 0.0))
         right = float(getattr(bb, "r", 0.0))
-        bottom = float(getattr(bb, "b", 0.0))
+        t = float(getattr(bb, "t", 0.0))
+        b = float(getattr(bb, "b", 0.0))
+        origin = str(getattr(getattr(bb, "coord_origin", ""), "value", getattr(bb, "coord_origin", ""))).upper()
+        ph = page_heights.get(page_no)
+        if "BOTTOM" in origin and ph:
+            top, bottom = ph - t, ph - b
+        else:
+            top, bottom = t, b
         return page_no, BBox(
-            x=round(left, 1),
-            y=round(top, 1),
+            x=round(min(left, right), 1),
+            y=round(min(top, bottom), 1),
             width=round(abs(right - left), 1),
             height=round(abs(bottom - top), 1),
         )
@@ -220,7 +278,7 @@ def _table_html(item: Any, doc: Any) -> str | None:
 def parse_document(data: bytes, filename: str) -> dict[str, Any]:
     """Run docling on raw bytes and return parse results.
 
-    Returns a dict: {nodes: list[Node], pages: int}.
+    Returns a dict: {nodes: list[Node], pages: int, page_images: list[dict]}.
     """
     from docling.datamodel.document import DocumentStream
     import io
@@ -258,6 +316,8 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
     except Exception:
         pass
 
+    page_images, page_heights = _build_pages(doc)
+
     nodes: list[Node] = []
     order = 0
     for item, _level in doc.iterate_items():
@@ -277,7 +337,7 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
             table_html = _table_html(item, doc) if ntype == "table" else None
         if not text and ntype not in ("picture", "table"):
             continue
-        page_no, bbox = _extract_bbox(item)
+        page_no, bbox = _extract_bbox(item, page_heights)
         order += 1
         nodes.append(
             Node(
@@ -298,5 +358,8 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
     except Exception:
         pages = max((n.page for n in nodes), default=1)
 
-    logger.info("[docling] done pages=%d nodes=%d elapsed=%.1fs", pages, len(nodes), time.monotonic() - t0)
-    return {"nodes": nodes, "pages": int(pages or 1)}
+    logger.info(
+        "[docling] done pages=%d nodes=%d page_images=%d elapsed=%.1fs",
+        pages, len(nodes), sum(1 for p in page_images if p.get("image")), time.monotonic() - t0,
+    )
+    return {"nodes": nodes, "pages": int(pages or 1), "page_images": page_images}

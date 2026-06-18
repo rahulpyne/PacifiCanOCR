@@ -114,6 +114,11 @@ the secret values to add. See [`infra/setup.sh`](../infra/setup.sh).
   time, so no models are fetched at runtime.
 - **OCR:** `DOCLING_OCR_MODE=auto` skips OCR on born-digital PDFs (those with a
   text layer) and only runs it on scans — much faster. Force with `on`/`off`.
+- **Original-layout preview:** docling renders each page to a bitmap
+  (`generate_page_images`) and extracts picture bitmaps (`generate_picture_images`);
+  the UI overlays labeled bounding boxes on the page image. Page/picture images are
+  stored inline (base64) in the parsed JSON, so `DOCLING_IMAGE_SCALE` trades preview
+  sharpness against JSON size. The downloadable JSON export omits page images.
 - **Long parses:** parsing runs in a background task; `POST /upload-and-parse`
   returns immediately with status `parsing` and the client polls `GET /{id}`
   until `parsed`/`error`. Keep **Always On** enabled so the worker isn't recycled

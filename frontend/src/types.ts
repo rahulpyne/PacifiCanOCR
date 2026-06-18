@@ -44,8 +44,16 @@ export interface DocumentSummary {
   error?: string | null;
 }
 
+export interface PageImage {
+  page_no: number;
+  width: number;
+  height: number;
+  image?: string | null;
+}
+
 export interface DocumentDetail extends DocumentSummary {
   nodes: DocNode[];
+  page_images?: PageImage[];
 }
 
 export interface Chunk {

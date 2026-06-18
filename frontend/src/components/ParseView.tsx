@@ -31,6 +31,7 @@ export function ParseView({
 }) {
   const [tab, setTab] = useState<Tab>("parse");
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<"layout" | "text">("layout");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
@@ -43,6 +44,10 @@ export function ParseView({
   const pages = Math.max(1, doc.pages);
 
   const pageNodes = useMemo(() => nodes.filter((n) => n.page === currentPage), [nodes, currentPage]);
+  const pageImage = useMemo(
+    () => doc.page_images?.find((p) => p.page_no === currentPage) ?? null,
+    [doc.page_images, currentPage]
+  );
 
   const treeNodes = useMemo(() => {
     const ft = filter.trim().toLowerCase();
@@ -256,6 +261,8 @@ export function ParseView({
           pageNodes={pageNodes}
           pages={pages}
           currentPage={currentPage}
+          pageImage={pageImage}
+          viewMode={viewMode}
           selectedId={selectedId}
           hoveredId={hoveredId}
           hiddenLayers={hiddenLayers}
@@ -266,6 +273,7 @@ export function ParseView({
           onPage={setPage}
           onPrev={() => setPage(Math.max(1, currentPage - 1))}
           onNext={() => setPage(Math.min(pages, currentPage + 1))}
+          onViewMode={setViewMode}
         />
 
         {tab === "parse" ? (

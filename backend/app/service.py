@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-from .models import Chunk, DocumentDetail, DocumentSummary, Node
+from .models import Chunk, DocumentDetail, DocumentSummary, Node, PageImage
 from .parser import parse_document
 from .storage import get_storage
 
@@ -95,7 +95,10 @@ def get_document(doc_id: str) -> Optional[DocumentDetail]:
         return None
     payload = storage.read_json(_content_paths(rec)["json"]) or {}
     nodes = [Node(**n) for n in payload.get("nodes", [])]
-    return DocumentDetail(**{**_summary_from_record(rec).model_dump(), "nodes": nodes})
+    page_images = [PageImage(**p) for p in payload.get("page_images", [])]
+    return DocumentDetail(
+        **{**_summary_from_record(rec).model_dump(), "nodes": nodes, "page_images": page_images}
+    )
 
 
 def parse(doc_id: str) -> DocumentDetail:
@@ -112,6 +115,7 @@ def parse(doc_id: str) -> DocumentDetail:
         data = storage.read_original(paths["original"])
         result = parse_document(data, rec["filename"])
         nodes: list[Node] = result["nodes"]
+        page_images = result.get("page_images", [])
         rec.update(
             status="parsed",
             pages=result["pages"],
@@ -120,8 +124,14 @@ def parse(doc_id: str) -> DocumentDetail:
             error=None,
         )
         storage.save_record(doc_id, rec)
-        _persist_nodes(rec, nodes)
-        return DocumentDetail(**{**_summary_from_record(rec).model_dump(), "nodes": nodes})
+        _persist_nodes(rec, nodes, page_images)
+        return DocumentDetail(
+            **{
+                **_summary_from_record(rec).model_dump(),
+                "nodes": nodes,
+                "page_images": [PageImage(**p) for p in page_images],
+            }
+        )
     except Exception as exc:  # surface parse failures to the UI
         rec.update(status="error", error=str(exc))
         storage.save_record(doc_id, rec)
@@ -143,8 +153,10 @@ def parse_safe(doc_id: str) -> None:
         logger.error("[parse] failed doc_id=%s elapsed=%.1fs error=%s", doc_id, time.monotonic() - t0, exc)
 
 
-def _persist_nodes(rec: dict[str, Any], nodes: list[Node]) -> str:
-    payload = build_export(rec, nodes)
+def _persist_nodes(
+    rec: dict[str, Any], nodes: list[Node], page_images: list[dict[str, Any]] | None = None
+) -> str:
+    payload = build_export(rec, nodes, page_images)
     return get_storage().save_json(_content_paths(rec)["json"], payload)
 
 
@@ -158,8 +170,17 @@ def update_nodes(doc_id: str, nodes: list[Node]) -> DocumentDetail:
         n.reading_order = i
     rec["node_count"] = len(nodes)
     storage.save_record(doc_id, rec)
-    _persist_nodes(rec, nodes)
-    return DocumentDetail(**{**_summary_from_record(rec).model_dump(), "nodes": nodes})
+    # preserve page images from the existing payload (node edits don't touch them)
+    existing = storage.read_json(_content_paths(rec)["json"]) or {}
+    page_images = existing.get("page_images", [])
+    _persist_nodes(rec, nodes, page_images)
+    return DocumentDetail(
+        **{
+            **_summary_from_record(rec).model_dump(),
+            "nodes": nodes,
+            "page_images": [PageImage(**p) for p in page_images],
+        }
+    )
 
 
 def delete_document(doc_id: str) -> None:
@@ -171,7 +192,9 @@ def delete_document(doc_id: str) -> None:
     storage.delete_document(doc_id, prefix)
 
 
-def build_export(rec: dict[str, Any], nodes: list[Node]) -> dict[str, Any]:
+def build_export(
+    rec: dict[str, Any], nodes: list[Node], page_images: list[dict[str, Any]] | None = None
+) -> dict[str, Any]:
     paths = _content_paths(rec) if rec.get("path_key") else {}
     return {
         "document": rec["filename"],
@@ -185,6 +208,7 @@ def build_export(rec: dict[str, Any], nodes: list[Node]) -> dict[str, Any]:
         "exported_at": _now(),
         "engine": "docling",
         "nodes": [n.model_dump() for n in nodes],
+        "page_images": page_images or [],
     }
 
 
