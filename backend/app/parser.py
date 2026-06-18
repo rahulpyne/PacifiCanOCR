@@ -283,6 +283,14 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
     from docling.datamodel.document import DocumentStream
     import io
 
+    # Ask docling to record per-stage timings (layout, OCR, table-structure, …).
+    try:
+        from docling.datamodel.settings import settings as docling_settings
+
+        docling_settings.debug.profile_pipeline_timings = True
+    except Exception:
+        pass
+
     t0 = time.monotonic()
     do_ocr = _resolve_do_ocr(data, filename)
     logger.info("[docling] filename=%s size=%d bytes do_ocr=%s", filename, len(data), do_ocr)
@@ -303,6 +311,20 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
         result = converter.convert(tmp_path)
 
     logger.info("[docling] convert done elapsed=%.1fs", time.monotonic() - t0)
+
+    # Per-stage breakdown (only present when profiling is supported/enabled).
+    try:
+        timings = getattr(result, "timings", None) or {}
+        for name, item in sorted(
+            timings.items(), key=lambda kv: sum(getattr(kv[1], "times", []) or []), reverse=True
+        ):
+            times = getattr(item, "times", None) or []
+            if times:
+                logger.info(
+                    "[docling] stage %-22s total=%6.1fs calls=%d", name, sum(times), len(times)
+                )
+    except Exception:
+        pass
 
     doc = result.document
 

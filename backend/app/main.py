@@ -10,6 +10,10 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
+# The Azure SDK logs every blob request/response at INFO, which floods the log
+# stream and buries our parse/docling timing lines. Quiet it to WARNING.
+for _noisy in ("azure", "azure.core.pipeline.policies.http_logging_policy", "azure.identity", "urllib3"):
+    logging.getLogger(_noisy).setLevel(logging.WARNING)
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
