@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { NODE_COLORS, type DocNode, type PageImage } from "../types";
 import { ChevronLeft, ChevronRight, Grid } from "./Icons";
 
@@ -301,6 +302,26 @@ function LayoutView({
 }) {
   const W = page.width || 1;
   const H = page.height || 1;
+
+  // Track the rendered width so labels can be sized in the page's own point
+  // space (px-per-point) — that keeps them proportional to the document's text
+  // at any zoom instead of a fixed pixel size that overpowers small renders.
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [pxPerPt, setPxPerPt] = useState(1);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const update = () => setPxPerPt(el.clientWidth / W);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [W, page.image]);
+
+  // ~6.5pt label, clamped so it stays legible but never larger than body text.
+  const labelFont = Math.min(11, Math.max(4.5, 6.5 * pxPerPt));
+  const labelH = labelFont + 3;
+
   return (
     <div
       style={{
@@ -318,7 +339,7 @@ function LayoutView({
       <Corner pos="tl" />
       <Corner pos="br" />
       {/* image box — overlays are positioned relative to this wrapper */}
-      <div style={{ position: "relative", lineHeight: 0 }}>
+      <div ref={wrapRef} style={{ position: "relative", lineHeight: 0 }}>
         <img
           src={page.image as string}
           alt={`Page ${page.page_no}`}
@@ -334,6 +355,9 @@ function LayoutView({
           const top = (n.bbox.y / H) * 100;
           const w = (n.bbox.width / W) * 100;
           const h = (n.bbox.height / H) * 100;
+          // Only label the active box at small zoom to avoid clutter; always
+          // label when hovered/selected.
+          const showLabel = sel || hov || labelFont >= 6.5;
           return (
             <div
               key={n.id}
@@ -346,7 +370,7 @@ function LayoutView({
                 top: `${top}%`,
                 width: `${w}%`,
                 height: `${h}%`,
-                border: `1.5px solid ${accent}`,
+                border: `${Math.max(0.75, pxPerPt * 0.6)}px solid ${accent}`,
                 borderRadius: 2,
                 background: sel ? fillFor(n.type, 18) : hov ? fillFor(n.type, 9) : "transparent",
                 boxShadow: sel && enableGlow ? `0 0 10px ${fillFor(n.type, 45)}` : "none",
@@ -356,27 +380,31 @@ function LayoutView({
                 zIndex: sel || hov ? 3 : 1,
               }}
             >
-              <span
-                style={{
-                  position: "absolute",
-                  top: -13,
-                  left: -1.5,
-                  fontFamily: "var(--mono)",
-                  fontSize: 8,
-                  lineHeight: "12px",
-                  letterSpacing: ".06em",
-                  textTransform: "uppercase",
-                  color: "#fff",
-                  background: accent,
-                  padding: "0 4px",
-                  borderRadius: "2px 2px 0 0",
-                  whiteSpace: "nowrap",
-                  pointerEvents: "none",
-                  opacity: dim ? 0 : 1,
-                }}
-              >
-                {n.type}
-              </span>
+              {showLabel && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -labelH,
+                    left: -0.75,
+                    fontFamily: "var(--mono)",
+                    fontSize: labelFont,
+                    lineHeight: `${labelH}px`,
+                    letterSpacing: ".04em",
+                    fontWeight: 500,
+                    textTransform: "uppercase",
+                    color: "#fff",
+                    background: accent,
+                    padding: `0 ${Math.max(2, labelFont * 0.45)}px`,
+                    borderRadius: "2px 2px 0 0",
+                    whiteSpace: "nowrap",
+                    pointerEvents: "none",
+                    opacity: dim ? 0 : sel || hov ? 1 : 0.82,
+                    zIndex: sel || hov ? 4 : 2,
+                  }}
+                >
+                  {n.type}
+                </span>
+              )}
             </div>
           );
         })}
