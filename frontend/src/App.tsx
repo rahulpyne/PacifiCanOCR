@@ -55,12 +55,17 @@ export default function App() {
   }, [refreshDocs]);
 
   const openDoc = async (id: string) => {
-    watchingId.current = null; // detach UI from any background poll
+    watchingId.current = id; // follow this doc for live updates
     setError(null);
     try {
       const detail = await api.getDocument(id);
       setActiveDoc(detail);
       setView("parse");
+      // If it's still in progress, (re)attach a poll so the view fills in live.
+      // startPoll is idempotent per id — it cancels any prior poll for the same doc.
+      if (detail.status === "parsing" || detail.status === "uploaded") {
+        startPoll(id);
+      }
     } catch (e) {
       setError((e as Error).message);
     }
