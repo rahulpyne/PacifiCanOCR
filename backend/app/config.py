@@ -44,8 +44,8 @@ class Settings(BaseSettings):
     adls_account_name: str | None = None
 
     # Two separate ADLS containers (filesystems):
-    adls_originals_filesystem: str = "originals"    # raw uploaded files
-    adls_json_filesystem: str = "parsed-json"        # parsed JSON + records
+    adls_originals_filesystem: str = "originalfiles"  # raw uploaded files
+    adls_json_filesystem: str = "parsedjsons"         # parsed JSON + records
 
     # --- Docling ---
     docling_do_ocr: bool = True

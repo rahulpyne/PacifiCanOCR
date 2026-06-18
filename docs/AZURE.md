@@ -5,8 +5,8 @@ in **Azure Data Lake Storage Gen2** across **two separate containers**:
 
 | Container | Holds |
 |-----------|-------|
-| `originals` | the original uploaded files |
-| `parsed-json` | the downloadable parsed JSON content + document metadata records |
+| `originalfiles` | the original uploaded files |
+| `parsedjsons` | the downloadable parsed JSON content + document metadata records |
 
 The storage backend is selected with one env var (`STORAGE_BACKEND=adls`) — no
 code changes between local and Azure.
@@ -31,7 +31,7 @@ workflow.
 1. **Resource group** — e.g. `pacifican-parse-rg`, region *Canada Central*.
 2. **Storage account (ADLS Gen2)** — Standard / LRS, and in the **Advanced**
    tab toggle **Enable hierarchical namespace** ✅ (this is what makes it Gen2).
-3. **Two containers** inside it: `originals` and `parsed-json`.
+3. **Two containers** inside it: `originalfiles` and `parsedjsons`.
 4. **Azure Container Registry** — SKU *Basic*; enable **Admin user** under
    *Access keys*.
 5. **Web App for Containers** — Publish = *Container*, OS = *Linux*, Plan = *B2*.
@@ -44,8 +44,8 @@ Web App → *Settings → Environment variables → App settings*, add:
 |------|-------|
 | `STORAGE_BACKEND` | `adls` |
 | `ADLS_CONNECTION_STRING` | *(paste the storage account connection string)* |
-| `ADLS_ORIGINALS_FILESYSTEM` | `originals` |
-| `ADLS_JSON_FILESYSTEM` | `parsed-json` |
+| `ADLS_ORIGINALS_FILESYSTEM` | `originalfiles` |
+| `ADLS_JSON_FILESYSTEM` | `parsedjsons` |
 | `DOCLING_DO_OCR` | `true` |
 | `DOCLING_DO_TABLE_STRUCTURE` | `true` |
 | `ENVIRONMENT` | `azure` |

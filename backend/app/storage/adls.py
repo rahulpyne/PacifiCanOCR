@@ -1,9 +1,9 @@
 """Azure Data Lake Storage Gen2 backend — two containers, dated paths.
 
-  originals container (ADLS_ORIGINALS_FILESYSTEM)
+  originalfiles container (ADLS_ORIGINALS_FILESYSTEM)
     <YYYY>/<MM>/<DD>/<doc_id>/<filename>
 
-  parsed-json container (ADLS_JSON_FILESYSTEM)
+  parsedjsons container (ADLS_JSON_FILESYSTEM)
     <YYYY>/<MM>/<DD>/<doc_id>/<stem>.json     final JSON content
     records/<doc_id>.json                      metadata index
 

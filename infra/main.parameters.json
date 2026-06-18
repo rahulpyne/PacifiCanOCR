@@ -5,7 +5,7 @@
     "location":           { "value": "canadacentral" },
     "prefix":             { "value": "pacifican" },
     "appServiceSku":      { "value": "B2" },
-    "originalsContainer": { "value": "originals" },
-    "jsonContainer":      { "value": "parsed-json" }
+    "originalsContainer": { "value": "originalfiles" },
+    "jsonContainer":      { "value": "parsedjsons" }
   }
 }

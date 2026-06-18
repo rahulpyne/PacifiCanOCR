@@ -21,8 +21,8 @@ ACR="${ACR:-pacificanacr}"           # container registry name
 PLAN="${PLAN:-pacifican-plan}"
 APP="${APP:-pacifican-parse-studio}"
 
-ORIGINALS_CONTAINER="originals"
-JSON_CONTAINER="parsed-json"
+ORIGINALS_CONTAINER="originalfiles"
+JSON_CONTAINER="parsedjsons"
 
 GITHUB_ORG="${GITHUB_ORG:-rahulpyne}"
 GITHUB_REPO="${GITHUB_REPO:-PacifiCanOCR}"
