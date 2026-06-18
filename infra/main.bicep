@@ -14,8 +14,8 @@ param location string = resourceGroup().location
 @description('Short prefix used to name all resources (3-8 lowercase alphanum)')
 param prefix string = 'pacifican'
 
-@description('App Service SKU — B2 minimum for docling CPU workload')
-param appServiceSku string = 'B2'
+@description('App Service SKU — P2v3 (4 vCPU) recommended for docling CPU workload; B2 is the bare minimum')
+param appServiceSku string = 'P2v3'
 
 @description('Name of the ADLS container for original uploaded files')
 param originalsContainer string = 'originals'
@@ -92,6 +92,7 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
         { name: 'DOCLING_DO_OCR',                value: 'true' }
         { name: 'DOCLING_DO_TABLE_STRUCTURE',    value: 'true' }
         { name: 'DOCLING_OCR_MODE',              value: 'auto' }
+        { name: 'OMP_NUM_THREADS',               value: '4' }   // match P2v3 vCPU count
         { name: 'ENVIRONMENT',                   value: 'azure' }
         { name: 'WEBSITES_PORT',                 value: '8000' }
         { name: 'CORS_ORIGINS',                  value: 'https://${appName}.azurewebsites.net' }

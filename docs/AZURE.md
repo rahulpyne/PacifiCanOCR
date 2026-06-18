@@ -16,8 +16,15 @@ code changes between local and Azure.
 ## Why App Service (Web App for Containers)
 
 Single Linux container, managed TLS/HTTPS, system-managed identity, and a
-first-class GitHub Actions deploy path. No Kubernetes overhead. **B2** tier is
-the practical minimum because docling's layout models are CPU-bound.
+first-class GitHub Actions deploy path. No Kubernetes overhead. docling's layout
+models are CPU-bound, so SKU drives parse speed: **B2** (2 burstable vCPU) is the
+bare minimum; **P2v3** (4 dedicated vCPU, 16 GB) is recommended and roughly halves
+layout time. Scale an existing plan in place:
+
+```bash
+az appservice plan update -g <rg> -n <plan> --sku P2V3
+az webapp config appsettings set -g <rg> -n <app> --settings OMP_NUM_THREADS=4
+```
 
 ---
 
