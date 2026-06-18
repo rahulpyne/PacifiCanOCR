@@ -4,6 +4,14 @@ Settings are environment-driven so the same code runs locally and on Azure
 (App Service / Web App for Containers). Locally we default to filesystem
 storage; in Azure we flip ``STORAGE_BACKEND`` to ``adls`` and point at an
 ADLS Gen2 account.
+
+ADLS layout (two separate containers):
+  originals/          ← ADLS_ORIGINALS_FILESYSTEM
+    <doc_id>/<filename>
+
+  parsed-json/        ← ADLS_JSON_FILESYSTEM
+    records/<doc_id>.json
+    <doc_id>/parsed.json
 """
 from __future__ import annotations
 
@@ -30,12 +38,14 @@ class Settings(BaseSettings):
     local_store_dir: Path = BASE_DIR / "data" / "store"
 
     # --- ADLS Gen2 (only required when storage_backend == "adls") ---
-    # Either supply a connection string OR an account name + use managed identity.
+    # Auth: supply a connection string OR just an account name (uses
+    # DefaultAzureCredential — managed identity on App Service).
     adls_connection_string: str | None = None
     adls_account_name: str | None = None
-    adls_filesystem: str = "parse-studio"          # the ADLS container/filesystem
-    adls_originals_prefix: str = "originals"        # original uploaded files
-    adls_json_prefix: str = "parsed"               # final parsed JSON output
+
+    # Two separate ADLS containers (filesystems):
+    adls_originals_filesystem: str = "originals"    # raw uploaded files
+    adls_json_filesystem: str = "parsed-json"        # parsed JSON + records
 
     # --- Docling ---
     docling_do_ocr: bool = True

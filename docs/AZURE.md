@@ -1,92 +1,114 @@
 # Azure deployment guide
 
-This app is designed to run on **Azure App Service** or **Azure Web App for
-Containers**, with originals and final JSON stored in **Azure Data Lake Storage
-Gen2 (ADLS)** containers. The storage backend is swapped with a single env var
-— no code changes between local and Azure.
+Hosts the app on **Azure App Service (Web App for Containers)** and stores data
+in **Azure Data Lake Storage Gen2** across **two separate containers**:
 
-## 1. Provision storage (ADLS Gen2)
+| Container | Holds |
+|-----------|-------|
+| `originals` | the original uploaded files |
+| `parsed-json` | the downloadable parsed JSON content + document metadata records |
+
+The storage backend is selected with one env var (`STORAGE_BACKEND=adls`) — no
+code changes between local and Azure.
+
+---
+
+## Why App Service (Web App for Containers)
+
+Single Linux container, managed TLS/HTTPS, system-managed identity, and a
+first-class GitHub Actions deploy path. No Kubernetes overhead. **B2** tier is
+the practical minimum because docling's layout models are CPU-bound.
+
+---
+
+## Option 1 — Provision manually (Portal), connection-string auth
+
+This matches a "create resources in the Portal, paste connection strings"
+workflow.
+
+### Resources to create
+
+1. **Resource group** — e.g. `pacifican-parse-rg`, region *Canada Central*.
+2. **Storage account (ADLS Gen2)** — Standard / LRS, and in the **Advanced**
+   tab toggle **Enable hierarchical namespace** ✅ (this is what makes it Gen2).
+3. **Two containers** inside it: `originals` and `parsed-json`.
+4. **Azure Container Registry** — SKU *Basic*; enable **Admin user** under
+   *Access keys*.
+5. **Web App for Containers** — Publish = *Container*, OS = *Linux*, Plan = *B2*.
+
+### Configure the Web App
+
+Web App → *Settings → Environment variables → App settings*, add:
+
+| Name | Value |
+|------|-------|
+| `STORAGE_BACKEND` | `adls` |
+| `ADLS_CONNECTION_STRING` | *(paste the storage account connection string)* |
+| `ADLS_ORIGINALS_FILESYSTEM` | `originals` |
+| `ADLS_JSON_FILESYSTEM` | `parsed-json` |
+| `DOCLING_DO_OCR` | `true` |
+| `DOCLING_DO_TABLE_STRUCTURE` | `true` |
+| `ENVIRONMENT` | `azure` |
+| `WEBSITES_PORT` | `8000` |
+| `CORS_ORIGINS` | `https://<your-app>.azurewebsites.net` |
+
+> Prefer **managed identity** over a connection string in production: drop
+> `ADLS_CONNECTION_STRING`, set `ADLS_ACCOUNT_NAME=<account>`, and grant the
+> Web App's identity the **Storage Blob Data Contributor** role on the storage
+> account. The code uses `DefaultAzureCredential` automatically.
+
+### Deploy from GitHub
+
+Add these repo secrets (Settings → Secrets and variables → Actions):
+
+| Secret | From |
+|--------|------|
+| `ACR_LOGIN_SERVER` | ACR → Overview (e.g. `pacificanacr.azurecr.io`) |
+| `ACR_USERNAME` | ACR → Access keys |
+| `ACR_PASSWORD` | ACR → Access keys |
+| `AZURE_WEBAPP_NAME` | your Web App name |
+| `AZURE_WEBAPP_PUBLISH_PROFILE` | Web App → Overview → **Download publish profile** (paste file contents) |
+
+Then push to `main` — [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml)
+builds the image, pushes it to ACR, and deploys it to the Web App.
+
+---
+
+## Option 2 — Provision as code
+
+### Bicep (declarative, recommended)
 
 ```bash
-RG=pacifican-rg
-LOC=canadacentral
-SA=pacificanparse$RANDOM   # storage account name (globally unique, lowercase)
-
-az group create -n $RG -l $LOC
-
-# Storage account WITH hierarchical namespace = ADLS Gen2
-az storage account create -n $SA -g $RG -l $LOC \
-  --sku Standard_LRS --kind StorageV2 --hns true
-
-# One filesystem (container); the app uses prefixes inside it
-az storage fs create -n parse-studio --account-name $SA --auth-mode login
+az group create -n pacifican-parse-rg -l canadacentral
+az deployment group create \
+  -g pacifican-parse-rg \
+  -f infra/main.bicep \
+  -p @infra/main.parameters.json
 ```
 
-The app writes:
+Creates the storage account + both containers, ACR, plan, and Web App with a
+managed identity already granted Storage Blob Data Contributor + AcrPull.
+See [`infra/main.bicep`](../infra/main.bicep).
 
-```
-parse-studio/
-  originals/<doc_id>/<filename>     # original uploaded files
-  parsed/<doc_id>/parsed.json        # final JSON content
-  records/<doc_id>.json              # document metadata
-```
-
-## 2. Build the container image
-
-A multi-stage `Dockerfile` (repo root) builds the React frontend and serves it
-plus the FastAPI API from one image.
+### Shell script (imperative, also sets up OIDC for CI)
 
 ```bash
-ACR=pacificanacr
-az acr create -n $ACR -g $RG --sku Basic --admin-enabled true
-az acr build -t parse-studio:latest -r $ACR .
+chmod +x infra/setup.sh
+./infra/setup.sh
 ```
 
-## 3. Deploy (Web App for Containers)
+Provisions everything plus a GitHub Actions OIDC federated identity, and prints
+the secret values to add. See [`infra/setup.sh`](../infra/setup.sh).
 
-```bash
-PLAN=pacifican-plan
-APP=pacifican-parse-studio
+---
 
-az appservice plan create -g $RG -n $PLAN --is-linux --sku B2
-az webapp create -g $RG -p $PLAN -n $APP \
-  --deployment-container-image-name $ACR.azurecr.io/parse-studio:latest
+## Notes
 
-# Use managed identity to reach ADLS (no secrets in config)
-az webapp identity assign -g $RG -n $APP
-PRINCIPAL=$(az webapp identity show -g $RG -n $APP --query principalId -o tsv)
-SCOPE=$(az storage account show -n $SA -g $RG --query id -o tsv)
-az role assignment create --assignee $PRINCIPAL \
-  --role "Storage Blob Data Contributor" --scope $SCOPE
-```
-
-## 4. Configure app settings
-
-```bash
-az webapp config appsettings set -g $RG -n $APP --settings \
-  STORAGE_BACKEND=adls \
-  ADLS_ACCOUNT_NAME=$SA \
-  ADLS_FILESYSTEM=parse-studio \
-  ADLS_ORIGINALS_PREFIX=originals \
-  ADLS_JSON_PREFIX=parsed \
-  ENVIRONMENT=azure \
-  CORS_ORIGINS=https://$APP.azurewebsites.net \
-  WEBSITES_PORT=8000
-```
-
-`ADLS_ACCOUNT_NAME` + managed identity is the recommended auth path
-(`DefaultAzureCredential`). For local-to-cloud testing you can instead set
-`ADLS_CONNECTION_STRING`.
-
-## 5. Notes
-
-- **Model cache / cold start:** docling downloads layout + OCR models on first
-  use. Bake them into the image (warm the converter at build time) or mount a
-  persistent volume so restarts don't re-download. The B2+ tier is recommended
-  for the CPU-bound layout models.
-- **Large files / long parses:** for big documents, move parsing to a background
-  worker (Azure Container Apps job or a queue + worker) and have the UI poll
-  document status (`uploaded → parsing → parsed`). The status field already
-  exists in the model.
-- **Vector ingest (production):** wire `routers/ingest.py` to Azure AI Search to
-  make the Ingest module write real embeddings.
+- **Cold start / models:** docling downloads layout + OCR models on first parse.
+  The `Dockerfile` has a commented line to warm them at build time — uncomment
+  it to bake models into the image and avoid the first-request delay.
+- **Long parses:** for large documents, move parsing to a background worker
+  (Container Apps job or queue + worker) and poll document status
+  (`uploaded → parsing → parsed`). The status field already exists.
+- **Vector ingest (production):** wire `backend/app/routers/ingest.py` to Azure
+  AI Search to make the Ingest module write real embeddings.

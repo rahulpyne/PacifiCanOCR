@@ -1,17 +1,18 @@
-"""Azure Data Lake Storage Gen2 backend.
+"""Azure Data Lake Storage Gen2 backend — two containers, dated paths.
 
-Stores, within one ADLS filesystem (container):
+  originals container (ADLS_ORIGINALS_FILESYSTEM)
+    <YYYY>/<MM>/<DD>/<doc_id>/<filename>
 
-    <originals_prefix>/<doc_id>/<filename>   # original uploaded file
-    <json_prefix>/<doc_id>/parsed.json        # final parsed JSON content
-    records/<doc_id>.json                      # document metadata record
+  parsed-json container (ADLS_JSON_FILESYSTEM)
+    <YYYY>/<MM>/<DD>/<doc_id>/<stem>.json     final JSON content
+    records/<doc_id>.json                      metadata index
 
-Auth is either a connection string (``ADLS_CONNECTION_STRING``) or, when only
-``ADLS_ACCOUNT_NAME`` is set, ``DefaultAzureCredential`` (managed identity on
-Azure App Service / Container Apps — the recommended production path).
+The dated ``<YYYY>/<MM>/<DD>/<doc_id>`` prefix is identical in both containers,
+so each original maps one-to-one to its JSON.
 
-This backend is import-light: the azure SDK is only imported when the backend
-is actually constructed, so local dev never needs Azure configured.
+Auth:
+  1. ADLS_CONNECTION_STRING — explicit connection string
+  2. ADLS_ACCOUNT_NAME only — DefaultAzureCredential (managed identity)
 """
 from __future__ import annotations
 
@@ -25,9 +26,8 @@ class ADLSStorage(StorageBackend):
     def __init__(
         self,
         *,
-        filesystem: str,
-        originals_prefix: str,
-        json_prefix: str,
+        originals_filesystem: str,
+        json_filesystem: str,
         connection_string: str | None = None,
         account_name: str | None = None,
     ):
@@ -47,81 +47,91 @@ class ADLSStorage(StorageBackend):
                 "ADLS storage requires ADLS_CONNECTION_STRING or ADLS_ACCOUNT_NAME"
             )
 
-        self.fs = service.get_file_system_client(filesystem)
+        self._originals = self._ensure(service, originals_filesystem)
+        self._json = self._ensure(service, json_filesystem)
+
+    @staticmethod
+    def _ensure(service: Any, name: str) -> Any:
+        fs = service.get_file_system_client(name)
         try:
-            self.fs.create_file_system()
+            fs.create_file_system()
         except Exception:
             pass  # already exists
+        return fs
 
-        self.originals_prefix = originals_prefix.strip("/")
-        self.json_prefix = json_prefix.strip("/")
+    # ---- low-level helpers ----
+    @staticmethod
+    def _upload(fs: Any, path: str, data: bytes) -> str:
+        fs.get_file_client(path).upload_data(data, overwrite=True)
+        return f"{fs.file_system_name}/{path}"
 
-    # ---- helpers ----
-    def _upload(self, path: str, data: bytes) -> str:
-        file_client = self.fs.get_file_client(path)
-        file_client.upload_data(data, overwrite=True)
-        return f"{self.fs.file_system_name}/{path}"
-
-    def _download(self, path: str) -> Optional[bytes]:
-        file_client = self.fs.get_file_client(path)
+    @staticmethod
+    def _download(fs: Any, path: str) -> Optional[bytes]:
         try:
-            return file_client.download_file().readall()
+            return fs.get_file_client(path).download_file().readall()
         except Exception:
             return None
 
-    # ---- original files ----
-    def save_original(self, doc_id: str, filename: str, data: bytes) -> str:
-        return self._upload(f"{self.originals_prefix}/{doc_id}/{filename}", data)
+    @staticmethod
+    def _delete(fs: Any, path: str) -> None:
+        try:
+            fs.get_file_client(path).delete_file()
+            return
+        except Exception:
+            pass
+        try:
+            fs.get_directory_client(path).delete_directory()
+        except Exception:
+            pass
 
-    def read_original(self, doc_id: str, filename: str) -> bytes:
-        data = self._download(f"{self.originals_prefix}/{doc_id}/{filename}")
+    # ---- originals ----
+    def save_original(self, path: str, data: bytes) -> str:
+        return self._upload(self._originals, path, data)
+
+    def read_original(self, path: str) -> bytes:
+        data = self._download(self._originals, path)
         if data is None:
-            raise FileNotFoundError(filename)
+            raise FileNotFoundError(path)
         return data
 
-    # ---- metadata ----
+    # ---- parsed-json content ----
+    def save_json(self, path: str, payload: dict[str, Any]) -> str:
+        return self._upload(
+            self._json, path, json.dumps(payload, indent=2, default=str).encode("utf-8")
+        )
+
+    def read_json(self, path: str) -> Optional[dict[str, Any]]:
+        data = self._download(self._json, path)
+        return json.loads(data) if data else None
+
+    # ---- records (index) ----
     def save_record(self, doc_id: str, record: dict[str, Any]) -> None:
         self._upload(
+            self._json,
             f"records/{doc_id}.json",
             json.dumps(record, indent=2, default=str).encode("utf-8"),
         )
 
     def read_record(self, doc_id: str) -> Optional[dict[str, Any]]:
-        data = self._download(f"records/{doc_id}.json")
+        data = self._download(self._json, f"records/{doc_id}.json")
         return json.loads(data) if data else None
 
     def list_records(self) -> list[dict[str, Any]]:
         records: list[dict[str, Any]] = []
-        for path in self.fs.get_paths(path="records"):
-            if path.is_directory:
-                continue
-            data = self._download(path.name)
-            if data:
-                records.append(json.loads(data))
+        try:
+            for path in self._json.get_paths(path="records"):
+                if getattr(path, "is_directory", False):
+                    continue
+                data = self._download(self._json, path.name)
+                if data:
+                    records.append(json.loads(data))
+        except Exception:
+            pass
         records.sort(key=lambda r: r.get("created_at", ""), reverse=True)
         return records
 
-    def delete_record(self, doc_id: str) -> None:
-        for path in (
-            f"records/{doc_id}.json",
-            f"{self.json_prefix}/{doc_id}",
-            f"{self.originals_prefix}/{doc_id}",
-        ):
-            try:
-                self.fs.get_file_client(path).delete_file()
-            except Exception:
-                try:
-                    self.fs.get_directory_client(path).delete_directory()
-                except Exception:
-                    pass
-
-    # ---- final JSON ----
-    def save_json(self, doc_id: str, payload: dict[str, Any]) -> str:
-        return self._upload(
-            f"{self.json_prefix}/{doc_id}/parsed.json",
-            json.dumps(payload, indent=2, default=str).encode("utf-8"),
-        )
-
-    def read_json(self, doc_id: str) -> Optional[dict[str, Any]]:
-        data = self._download(f"{self.json_prefix}/{doc_id}/parsed.json")
-        return json.loads(data) if data else None
+    # ---- delete ----
+    def delete_document(self, doc_id: str, prefix: str) -> None:
+        self._delete(self._originals, prefix)
+        self._delete(self._json, prefix)
+        self._delete(self._json, f"records/{doc_id}.json")

@@ -70,7 +70,9 @@ def export_json(doc_id: str) -> Response:
         raise HTTPException(status_code=404, detail="Document not found")
     payload = service.build_export(detail.model_dump(), detail.nodes)
     body = json.dumps(payload, indent=2, default=str)
-    filename = f"{detail.filename.rsplit('.', 1)[0]}.parsed.json"
+    # date-coded download name keeps JSON files mappable to their originals
+    stem = detail.filename.rsplit(".", 1)[0]
+    filename = f"{detail.id}_{stem}.json"
     return Response(
         content=body,
         media_type="application/json",

@@ -15,9 +15,8 @@ def get_storage() -> StorageBackend:
         from .adls import ADLSStorage
 
         return ADLSStorage(
-            filesystem=s.adls_filesystem,
-            originals_prefix=s.adls_originals_prefix,
-            json_prefix=s.adls_json_prefix,
+            originals_filesystem=s.adls_originals_filesystem,
+            json_filesystem=s.adls_json_filesystem,
             connection_string=s.adls_connection_string,
             account_name=s.adls_account_name,
         )

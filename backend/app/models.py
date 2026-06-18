@@ -53,6 +53,10 @@ class DocumentSummary(BaseModel):
     created_at: datetime
     parsed_at: Optional[datetime] = None
     error: Optional[str] = None
+    # dated path prefix shared by both containers, e.g. 2026/06/17/<doc_id>
+    path_key: Optional[str] = None
+    original_path: Optional[str] = None
+    json_path: Optional[str] = None
 
 
 class DocumentDetail(DocumentSummary):
