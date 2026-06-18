@@ -194,7 +194,7 @@ export function ParseView({
               {doc.status.toUpperCase()}
             </span>
           </div>
-          <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--mut)", marginTop: 6 }}>
+          <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--mut)", marginTop: 6, whiteSpace: "nowrap" }}>
             {fmtSize(doc.size_bytes)} · {doc.pages} pages · {doc.node_count} nodes · {doc.classification}
           </div>
         </div>

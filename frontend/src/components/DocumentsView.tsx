@@ -169,13 +169,13 @@ export function DocumentsView({
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
+                    maxWidth: "100%",
                   }}
                 >
                   {d.filename}
                 </div>
-                <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--mut)", marginTop: 5 }}>
-                  {fmtSize(d.size_bytes)} · {d.pages} pages · {d.node_count} nodes ·{" "}
-                  {fmtAgo(d.created_at)}
+                <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--mut)", marginTop: 5, whiteSpace: "nowrap" }}>
+                  {fmtSize(d.size_bytes)} · {d.pages}p · {d.node_count} nodes · {fmtAgo(d.created_at)}
                 </div>
               </div>
               <span
