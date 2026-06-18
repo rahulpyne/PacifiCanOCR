@@ -27,6 +27,8 @@ export interface DocNode {
   bbox?: BBox | null;
   // For table nodes: structured HTML for rich rendering (text holds markdown).
   table_html?: string | null;
+  // For picture nodes: base64 PNG data URI of the extracted image.
+  image?: string | null;
 }
 
 export interface DocumentSummary {

@@ -205,7 +205,7 @@ export function DocumentViewer({
                       {n.type}
                     </span>
                     {n.type === "picture" ? (
-                      <PictureRegion label={n.text} />
+                      <PictureRegion label={n.text} image={n.image} />
                     ) : n.type === "table" && n.table_html ? (
                       <div
                         className="doc-table"
@@ -284,7 +284,38 @@ function Corner({ pos }: { pos: "tl" | "br" }) {
   );
 }
 
-function PictureRegion({ label }: { label: string }) {
+function PictureRegion({ label, image }: { label: string; image?: string | null }) {
+  // When docling extracted the bitmap, render it; otherwise fall back to the
+  // dashed placeholder graphic.
+  if (image) {
+    return (
+      <figure style={{ margin: 0 }}>
+        <img
+          src={image}
+          alt={label || "extracted figure"}
+          style={{
+            display: "block",
+            maxWidth: "100%",
+            height: "auto",
+            borderRadius: 6,
+            border: "1px solid var(--doc-line)",
+          }}
+        />
+        {label && (
+          <figcaption
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: 11,
+              color: "var(--doc-mut)",
+              marginTop: 6,
+            }}
+          >
+            {label}
+          </figcaption>
+        )}
+      </figure>
+    );
+  }
   return (
     <div
       style={{

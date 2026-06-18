@@ -42,6 +42,8 @@ class Node(BaseModel):
     bbox: Optional[BBox] = None
     # For table nodes: structured HTML for rich rendering (text holds markdown).
     table_html: Optional[str] = None
+    # For picture nodes: base64 PNG data URI of the extracted image.
+    image: Optional[str] = None
 
 
 class DocumentSummary(BaseModel):

@@ -57,6 +57,10 @@ def _converter(do_ocr: bool):
     pipeline_options = PdfPipelineOptions()
     pipeline_options.do_ocr = do_ocr
     pipeline_options.do_table_structure = s.docling_do_table_structure
+    # Extract embedded picture bitmaps so they can be rendered in the UI.
+    # Without this docling emits a "image not available" placeholder instead.
+    pipeline_options.generate_picture_images = True
+    pipeline_options.images_scale = s.docling_image_scale
     # Point docling (incl. EasyOCR) at the models baked into the image so it
     # never fetches from HuggingFace at runtime.
     if s.docling_artifacts_path:
@@ -159,6 +163,45 @@ def _item_text(item: Any, doc: Any = None) -> str:
     return ""
 
 
+def _picture_caption(item: Any, doc: Any) -> str:
+    """Caption text for a picture, or empty — never the markdown placeholder."""
+    cap = getattr(item, "caption_text", None)
+    if callable(cap):
+        for args in ((doc,), ()):
+            try:
+                val = cap(*args)
+                if isinstance(val, str) and val.strip():
+                    return val.strip()
+            except Exception:
+                continue
+    elif isinstance(cap, str) and cap.strip():
+        return cap.strip()
+    txt = getattr(item, "text", None)
+    return txt.strip() if isinstance(txt, str) and txt.strip() else ""
+
+
+def _picture_image(item: Any, doc: Any) -> str | None:
+    """Return a base64 PNG data URI for a picture item, or None.
+
+    Requires ``generate_picture_images=True`` on the pipeline so docling actually
+    decodes the bitmap. If the image is missing we return None and the UI shows a
+    placeholder box instead of docling's raw HTML comment.
+    """
+    try:
+        get_image = getattr(item, "get_image", None)
+        img = get_image(doc) if callable(get_image) else getattr(getattr(item, "image", None), "pil_image", None)
+        if img is None:
+            return None
+        import base64
+        import io as _io
+
+        buf = _io.BytesIO()
+        img.save(buf, format="PNG")
+        return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+    except Exception:
+        return None
+
+
 def _table_html(item: Any, doc: Any) -> str | None:
     """Structured HTML for a table item, for rich rendering in the UI."""
     export = getattr(item, "export_to_html", None)
@@ -221,11 +264,19 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
         label = getattr(item, "label", None)
         if label is None:
             continue
-        text = _item_text(item, doc)
         ntype = _label_to_type(label)
+        # Pictures: use only the caption as text (never the markdown placeholder),
+        # and carry the extracted bitmap as a data URI.
+        if ntype == "picture":
+            text = _picture_caption(item, doc)
+            image = _picture_image(item, doc)
+            table_html = None
+        else:
+            text = _item_text(item, doc)
+            image = None
+            table_html = _table_html(item, doc) if ntype == "table" else None
         if not text and ntype not in ("picture", "table"):
             continue
-        table_html = _table_html(item, doc) if ntype == "table" else None
         page_no, bbox = _extract_bbox(item)
         order += 1
         nodes.append(
@@ -238,6 +289,7 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
                 confidence=round(default_conf, 3),
                 bbox=bbox,
                 table_html=table_html,
+                image=image,
             )
         )
 

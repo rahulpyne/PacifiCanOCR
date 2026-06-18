@@ -57,6 +57,8 @@ class Settings(BaseSettings):
     # image). When set, docling/EasyOCR read from here instead of fetching at
     # runtime. Unset locally → docling uses its default cache.
     docling_artifacts_path: str | None = None
+    # Resolution multiplier for extracted picture images (1.0 = page DPI).
+    docling_image_scale: float = 2.0
 
     @property
     def cors_origin_list(self) -> list[str]:
