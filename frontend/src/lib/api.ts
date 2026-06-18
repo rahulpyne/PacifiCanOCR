@@ -66,21 +66,26 @@ export const api = {
    */
   pollDocument: (
     id: string,
-    opts: { intervalMs?: number; onTick?: (d: DocumentDetail) => void } = {}
+    opts: { intervalMs?: number; onTick?: (d: DocumentDetail) => void; signal?: AbortSignal } = {}
   ): Promise<DocumentDetail> => {
     const interval = opts.intervalMs ?? 2000;
     return new Promise((resolve, reject) => {
+      if (opts.signal?.aborted) return;
+      let timerId: number | undefined;
+      opts.signal?.addEventListener("abort", () => window.clearTimeout(timerId));
       const tick = async () => {
+        if (opts.signal?.aborted) return;
         try {
           const detail = await api.getDocument(id);
+          if (opts.signal?.aborted) return;
           opts.onTick?.(detail);
           if (detail.status === "parsed" || detail.status === "error") {
             resolve(detail);
           } else {
-            window.setTimeout(tick, interval);
+            timerId = window.setTimeout(tick, interval);
           }
         } catch (e) {
-          reject(e);
+          if (!opts.signal?.aborted) reject(e);
         }
       };
       tick();
