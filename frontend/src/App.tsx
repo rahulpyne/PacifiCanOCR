@@ -39,9 +39,16 @@ export default function App() {
     setUploading(true);
     setError(null);
     try {
-      const detail = await api.uploadAndParse(file);
-      setActiveDoc(detail);
+      // Returns immediately with status "parsing"; open the view, then poll.
+      const pending = await api.uploadAndParse(file);
+      setActiveDoc(pending);
       setView("parse");
+      refreshDocs();
+      const detail = await api.pollDocument(pending.id, {
+        onTick: (d) => setActiveDoc(d),
+      });
+      setActiveDoc(detail);
+      if (detail.status === "error") setError(detail.error || "Parse failed");
       refreshDocs();
     } catch (e) {
       setError((e as Error).message);
@@ -55,8 +62,13 @@ export default function App() {
     setReparsing(true);
     setError(null);
     try {
-      const detail = await api.reparse(activeDoc.id);
+      const pending = await api.reparse(activeDoc.id);
+      setActiveDoc(pending);
+      const detail = await api.pollDocument(pending.id, {
+        onTick: (d) => setActiveDoc(d),
+      });
       setActiveDoc(detail);
+      if (detail.status === "error") setError(detail.error || "Parse failed");
       refreshDocs();
     } catch (e) {
       setError((e as Error).message);

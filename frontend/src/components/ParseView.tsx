@@ -260,6 +260,7 @@ export function ParseView({
           hoveredId={hoveredId}
           hiddenLayers={hiddenLayers}
           enableGlow
+          parsing={doc.status === "parsing"}
           onSelect={selectNode}
           onHover={setHoveredId}
           onPage={setPage}

@@ -13,3 +13,7 @@ docling==2.26.0
 # activated when STORAGE_BACKEND=adls.
 azure-storage-file-datalake==12.18.0
 azure-identity==1.19.0
+
+# --- Testing ---
+pytest==8.3.4
+httpx==0.28.1

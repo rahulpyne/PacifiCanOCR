@@ -124,6 +124,19 @@ def parse(doc_id: str) -> DocumentDetail:
         raise
 
 
+def parse_safe(doc_id: str) -> None:
+    """Background-task entry point: parse, swallowing errors.
+
+    ``parse`` already records ``status="error"`` + message on failure, which the
+    frontend surfaces via polling, so we just suppress the exception here to keep
+    the background worker from logging an unhandled crash.
+    """
+    try:
+        parse(doc_id)
+    except Exception:
+        pass
+
+
 def _persist_nodes(rec: dict[str, Any], nodes: list[Node]) -> str:
     payload = build_export(rec, nodes)
     return get_storage().save_json(_content_paths(rec)["json"], payload)

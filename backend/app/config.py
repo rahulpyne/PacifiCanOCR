@@ -50,6 +50,13 @@ class Settings(BaseSettings):
     # --- Docling ---
     docling_do_ocr: bool = True
     docling_do_table_structure: bool = True
+    # OCR strategy: "auto" skips OCR when the PDF already has a text layer
+    # (born-digital), "on"/"off" force it via docling_do_ocr semantics.
+    docling_ocr_mode: Literal["auto", "on", "off"] = "auto"
+    # Directory holding pre-downloaded docling models (baked into the Docker
+    # image). When set, docling/EasyOCR read from here instead of fetching at
+    # runtime. Unset locally → docling uses its default cache.
+    docling_artifacts_path: str | None = None
 
     @property
     def cors_origin_list(self) -> list[str]:

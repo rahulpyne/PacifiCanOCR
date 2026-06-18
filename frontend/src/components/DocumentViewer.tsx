@@ -30,6 +30,7 @@ export function DocumentViewer({
   hoveredId,
   hiddenLayers,
   enableGlow,
+  parsing,
   onSelect,
   onHover,
   onPage,
@@ -44,6 +45,7 @@ export function DocumentViewer({
   hoveredId: string | null;
   hiddenLayers: string[];
   enableGlow: boolean;
+  parsing?: boolean;
   onSelect: (id: string) => void;
   onHover: (id: string | null) => void;
   onPage: (n: number) => void;
@@ -57,7 +59,7 @@ export function DocumentViewer({
         display: "flex",
         flexDirection: "column",
         minWidth: 0,
-        background: "radial-gradient(150% 90% at 50% 0%,#18232c,#0e151b)",
+        background: "radial-gradient(150% 90% at 50% 0%,#f3f6f8,#e7edf1)",
       }}
     >
       {/* page rail */}
@@ -69,7 +71,7 @@ export function DocumentViewer({
           gap: 14,
           padding: "10px 18px",
           borderBottom: "1px solid var(--doc-line)",
-          background: "rgba(0,0,0,.22)",
+          background: "rgba(0,0,0,.04)",
         }}
       >
         <div style={{ display: "flex", gap: 5, overflowX: "auto", paddingBottom: 2 }}>
@@ -85,7 +87,7 @@ export function DocumentViewer({
                   flex: "none",
                   borderRadius: 7,
                   border: `1px solid ${active ? "var(--teal-br)" : "var(--doc-line)"}`,
-                  background: active ? "var(--teal-br)" : "#1f2a33",
+                  background: active ? "var(--teal-br)" : "#fff",
                   color: active ? "#fff" : "var(--doc-mut)",
                   fontFamily: "var(--mono)",
                   fontSize: 11,
@@ -134,8 +136,26 @@ export function DocumentViewer({
 
             <div style={{ padding: "40px 46px 52px", display: "flex", flexDirection: "column", gap: 13 }}>
               {pageNodes.length === 0 && (
-                <div style={{ textAlign: "center", color: "var(--doc-mut)", fontSize: 13, padding: "40px 0" }}>
-                  No parsed nodes on this page.
+                <div
+                  style={{
+                    textAlign: "center",
+                    color: "var(--doc-mut)",
+                    fontSize: 13,
+                    padding: "40px 0",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  {parsing ? (
+                    <>
+                      <span className="spinner spinner-dark" />
+                      Parsing document…
+                    </>
+                  ) : (
+                    "No parsed nodes on this page."
+                  )}
                 </div>
               )}
               {pageNodes.map((n) => {
@@ -186,6 +206,11 @@ export function DocumentViewer({
                     </span>
                     {n.type === "picture" ? (
                       <PictureRegion label={n.text} />
+                    ) : n.type === "table" && n.table_html ? (
+                      <div
+                        className="doc-table"
+                        dangerouslySetInnerHTML={{ __html: n.table_html }}
+                      />
                     ) : (
                       <div style={nodeStyle(n.type)}>{n.text}</div>
                     )}
@@ -209,7 +234,7 @@ function RailBtn({ onClick, children }: { onClick: () => void; children: React.R
         height: 28,
         borderRadius: 7,
         border: "1px solid var(--doc-line)",
-        background: "#1f2a33",
+        background: "#fff",
         color: "var(--doc-mut)",
         cursor: "pointer",
         display: "flex",
@@ -323,7 +348,7 @@ function ModulePlaceholder({ tab }: { tab: "chunk" | "ingest" }) {
       >
         <Grid />
       </div>
-      <div style={{ fontSize: 16, fontWeight: 600, color: "#eaf1f5" }}>{info.title}</div>
+      <div style={{ fontSize: 16, fontWeight: 600, color: "var(--navy)" }}>{info.title}</div>
       <div style={{ fontSize: 12.5, color: "var(--doc-mut)", marginTop: 8, lineHeight: 1.6 }}>
         {info.body}
       </div>

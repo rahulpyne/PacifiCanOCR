@@ -59,6 +59,34 @@ export const api = {
 
   exportUrl: (id: string) => `${BASE}/documents/${id}/export`,
 
+  /**
+   * Poll GET /documents/{id} every `intervalMs` until parsing reaches a terminal
+   * state ("parsed" or "error"). `onTick` receives each intermediate detail so
+   * the UI can reflect progress. Resolves with the final detail.
+   */
+  pollDocument: (
+    id: string,
+    opts: { intervalMs?: number; onTick?: (d: DocumentDetail) => void } = {}
+  ): Promise<DocumentDetail> => {
+    const interval = opts.intervalMs ?? 2000;
+    return new Promise((resolve, reject) => {
+      const tick = async () => {
+        try {
+          const detail = await api.getDocument(id);
+          opts.onTick?.(detail);
+          if (detail.status === "parsed" || detail.status === "error") {
+            resolve(detail);
+          } else {
+            window.setTimeout(tick, interval);
+          }
+        } catch (e) {
+          reject(e);
+        }
+      };
+      tick();
+    });
+  },
+
   chunk: (id: string, max_tokens: number, overlap: number) =>
     fetch(`${BASE}/documents/${id}/chunk`, {
       method: "POST",

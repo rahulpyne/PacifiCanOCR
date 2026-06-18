@@ -48,9 +48,14 @@ Web App → *Settings → Environment variables → App settings*, add:
 | `ADLS_JSON_FILESYSTEM` | `parsedjsons` |
 | `DOCLING_DO_OCR` | `true` |
 | `DOCLING_DO_TABLE_STRUCTURE` | `true` |
+| `DOCLING_OCR_MODE` | `auto` |
 | `ENVIRONMENT` | `azure` |
 | `WEBSITES_PORT` | `8000` |
 | `CORS_ORIGINS` | `https://<your-app>.azurewebsites.net` |
+
+> Enable **Always On** so background parse tasks survive idle periods:
+> `az webapp config set -g <rg> -n <app> --always-on true`
+> (`DOCLING_ARTIFACTS_PATH` is baked into the image — no app setting needed.)
 
 > Prefer **managed identity** over a connection string in production: drop
 > `ADLS_CONNECTION_STRING`, set `ADLS_ACCOUNT_NAME=<account>`, and grant the
@@ -104,11 +109,14 @@ the secret values to add. See [`infra/setup.sh`](../infra/setup.sh).
 
 ## Notes
 
-- **Cold start / models:** docling downloads layout + OCR models on first parse.
-  The `Dockerfile` has a commented line to warm them at build time — uncomment
-  it to bake models into the image and avoid the first-request delay.
-- **Long parses:** for large documents, move parsing to a background worker
-  (Container Apps job or queue + worker) and poll document status
-  (`uploaded → parsing → parsed`). The status field already exists.
+- **Cold start / models:** the `Dockerfile` pre-downloads docling's layout, table,
+  and EasyOCR models to `/opt/docling-models` (`DOCLING_ARTIFACTS_PATH`) at build
+  time, so no models are fetched at runtime.
+- **OCR:** `DOCLING_OCR_MODE=auto` skips OCR on born-digital PDFs (those with a
+  text layer) and only runs it on scans — much faster. Force with `on`/`off`.
+- **Long parses:** parsing runs in a background task; `POST /upload-and-parse`
+  returns immediately with status `parsing` and the client polls `GET /{id}`
+  until `parsed`/`error`. Keep **Always On** enabled so the worker isn't recycled
+  mid-parse.
 - **Vector ingest (production):** wire `backend/app/routers/ingest.py` to Azure
   AI Search to make the Ingest module write real embeddings.

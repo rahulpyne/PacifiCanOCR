@@ -40,6 +40,8 @@ class Node(BaseModel):
     text: str = ""
     confidence: float = 1.0
     bbox: Optional[BBox] = None
+    # For table nodes: structured HTML for rich rendering (text holds markdown).
+    table_html: Optional[str] = None
 
 
 class DocumentSummary(BaseModel):

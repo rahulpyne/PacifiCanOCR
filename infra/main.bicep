@@ -83,6 +83,7 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
     siteConfig: {
       linuxFxVersion: 'DOCKER|mcr.microsoft.com/appsvc/staticsite:latest'  // overwritten by CI
       acrUseManagedIdentityCreds: true
+      alwaysOn: true   // keep the worker warm so background parse tasks survive
       appSettings: [
         { name: 'STORAGE_BACKEND',               value: 'adls' }
         { name: 'ADLS_ACCOUNT_NAME',             value: storageAccount.name }
@@ -90,6 +91,7 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
         { name: 'ADLS_JSON_FILESYSTEM',          value: jsonContainer }
         { name: 'DOCLING_DO_OCR',                value: 'true' }
         { name: 'DOCLING_DO_TABLE_STRUCTURE',    value: 'true' }
+        { name: 'DOCLING_OCR_MODE',              value: 'auto' }
         { name: 'ENVIRONMENT',                   value: 'azure' }
         { name: 'WEBSITES_PORT',                 value: '8000' }
         { name: 'CORS_ORIGINS',                  value: 'https://${appName}.azurewebsites.net' }

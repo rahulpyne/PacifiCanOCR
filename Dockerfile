@@ -27,10 +27,13 @@ COPY backend/app ./app
 # Built SPA served as static files by FastAPI
 COPY --from=frontend /web/dist ./static
 
-# Pre-download docling models into the image so the first parse request
-# does not have to fetch ~500MB from HuggingFace at runtime (which blows
-# past Azure App Service's 230s request timeout on cold start).
-RUN python -c "from docling.utils.model_downloader import download_models; download_models()"
+# Pre-download docling models into the image so the first parse request does
+# not have to fetch ~500MB from HuggingFace at runtime (which blows past Azure
+# App Service's 230s request timeout on cold start). Models go to a fixed path
+# that the app passes to docling as artifacts_path, so EasyOCR also reads from
+# here instead of re-downloading to ~/.EasyOCR at runtime.
+ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
+RUN python -c "from pathlib import Path; from docling.utils.model_downloader import download_models; download_models(output_dir=Path('/opt/docling-models'))"
 
 EXPOSE 8000
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]

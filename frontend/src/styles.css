@@ -24,12 +24,12 @@
   --rose: #c0567a;
   --gold: #9a7a1a;
   --slate: #5e6b78;
-  --doc-bg: #101820;
-  --doc-card: #1a242c;
-  --doc-line: #2b3742;
-  --doc-head: #eaf1f5;
-  --doc-body: #b9c6cf;
-  --doc-mut: #8c9aa6;
+  --doc-bg: #eef2f5;
+  --doc-card: #ffffff;
+  --doc-line: #e2e8ed;
+  --doc-head: #1d2b3a;
+  --doc-body: #2a2e33;
+  --doc-mut: #5e6b78;
   --ui: "Archivo", sans-serif;
   --mono: "JetBrains Mono", monospace;
   --serif: "Spectral", serif;
@@ -172,4 +172,28 @@ a {
 .spinner-dark {
   border: 2px solid var(--line2);
   border-top-color: var(--teal);
+}
+
+/* Structured table rendering inside the document preview */
+.doc-table {
+  overflow-x: auto;
+  font-family: var(--ui);
+  color: var(--doc-body);
+}
+.doc-table table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.doc-table th,
+.doc-table td {
+  border: 1px solid var(--doc-line);
+  padding: 5px 9px;
+  text-align: left;
+  vertical-align: top;
+}
+.doc-table th {
+  background: rgba(38, 55, 74, 0.05);
+  font-weight: 600;
+  color: var(--doc-head);
 }

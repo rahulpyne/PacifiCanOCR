@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, Response
 
 from .. import service
@@ -26,15 +26,18 @@ async def upload_document(file: UploadFile = File(...)) -> DocumentSummary:
 
 
 @router.post("/upload-and-parse", response_model=DocumentDetail, status_code=201)
-async def upload_and_parse(file: UploadFile = File(...)) -> DocumentDetail:
+async def upload_and_parse(
+    background_tasks: BackgroundTasks, file: UploadFile = File(...)
+) -> DocumentDetail:
     data = await file.read()
     if not data:
         raise HTTPException(status_code=400, detail="Empty file")
     summary = service.create_document(file.filename or "document", data)
-    try:
-        return service.parse(summary.id)
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Parse failed: {exc}")
+    # Parse in the background so the request returns immediately (docling can run
+    # for minutes on a constrained host, past Azure's 230s request timeout). The
+    # client polls GET /{id} until status is "parsed" or "error".
+    background_tasks.add_task(service.parse_safe, summary.id)
+    return DocumentDetail(**{**summary.model_dump(), "status": "parsing", "nodes": []})
 
 
 @router.get("/{doc_id}", response_model=DocumentDetail)
@@ -46,13 +49,13 @@ def get_document(doc_id: str) -> DocumentDetail:
 
 
 @router.post("/{doc_id}/parse", response_model=DocumentDetail)
-def parse_document(doc_id: str) -> DocumentDetail:
-    try:
-        return service.parse(doc_id)
-    except KeyError:
+def parse_document(doc_id: str, background_tasks: BackgroundTasks) -> DocumentDetail:
+    detail = service.get_document(doc_id)
+    if not detail:
         raise HTTPException(status_code=404, detail="Document not found")
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Parse failed: {exc}")
+    # Re-parse in the background; client polls GET /{id} for completion.
+    background_tasks.add_task(service.parse_safe, doc_id)
+    return DocumentDetail(**{**detail.model_dump(), "status": "parsing", "nodes": []})
 
 
 @router.put("/{doc_id}/nodes", response_model=DocumentDetail)

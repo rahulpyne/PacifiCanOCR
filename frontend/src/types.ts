@@ -25,6 +25,8 @@ export interface DocNode {
   text: string;
   confidence: number;
   bbox?: BBox | null;
+  // For table nodes: structured HTML for rich rendering (text holds markdown).
+  table_html?: string | null;
 }
 
 export interface DocumentSummary {
