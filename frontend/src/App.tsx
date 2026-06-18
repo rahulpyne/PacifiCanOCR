@@ -15,10 +15,12 @@ export default function App() {
   const [reparsing, setReparsing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const saveTimer = useRef<number | undefined>(undefined);
-  // Cancels a poll when a NEW upload/reparse starts (prevents two concurrent polls).
-  const pollAbort = useRef<AbortController | null>(null);
-  // Which doc id the UI should follow for live updates. Set to null on navigation
-  // so a background poll doesn't overwrite whatever the user just opened.
+  // One AbortController per doc that is actively being polled.
+  // Multiple files can parse simultaneously; each has its own entry here.
+  const pollMap = useRef(new Map<string, AbortController>());
+  // Which doc id the UI is currently following for live activeDoc updates.
+  // Navigating away sets this to null so background polls don't overwrite
+  // whatever doc the user just opened.
   const watchingId = useRef<string | null>(null);
 
   const refreshDocs = useCallback(() => {
@@ -29,8 +31,31 @@ export default function App() {
     refreshDocs();
   }, [refreshDocs]);
 
+  // Fire-and-forget poll for a single doc. Multiple docs can poll simultaneously.
+  // Updates activeDoc only while watchingId matches; always calls refreshDocs on finish.
+  const startPoll = useCallback((id: string) => {
+    pollMap.current.get(id)?.abort(); // cancel any prior poll for this same doc
+    const ac = new AbortController();
+    pollMap.current.set(id, ac);
+    api.pollDocument(id, {
+      signal: ac.signal,
+      onTick: (d) => { if (watchingId.current === id) setActiveDoc(d); },
+    }).then((detail) => {
+      pollMap.current.delete(id);
+      refreshDocs();
+      if (watchingId.current === id) {
+        setActiveDoc(detail);
+        if (detail.status === "error") setError(detail.error || "Parse failed");
+      }
+    }).catch((e) => {
+      pollMap.current.delete(id);
+      if ((e as Error).name !== "AbortError" && watchingId.current === id)
+        setError((e as Error).message);
+    });
+  }, [refreshDocs]);
+
   const openDoc = async (id: string) => {
-    watchingId.current = null; // stop live-updating activeDoc from any background poll
+    watchingId.current = null; // detach UI from any background poll
     setError(null);
     try {
       const detail = await api.getDocument(id);
@@ -42,33 +67,17 @@ export default function App() {
   };
 
   const upload = async (file: File) => {
-    // Cancel any previous poll so we don't have two concurrent polls running.
-    pollAbort.current?.abort();
-    const ac = new AbortController();
-    pollAbort.current = ac;
     setUploading(true);
     setError(null);
     try {
       const pending = await api.uploadAndParse(file);
-      const pollId = pending.id;
-      watchingId.current = pollId;
+      watchingId.current = pending.id;
       setActiveDoc(pending);
       setView("parse");
       refreshDocs();
-      const detail = await api.pollDocument(pollId, {
-        signal: ac.signal,
-        onTick: (d) => {
-          if (watchingId.current === pollId) setActiveDoc(d);
-        },
-      });
-      // Always refresh the list so the doc shows "parsed" even if user navigated away.
-      refreshDocs();
-      if (watchingId.current === pollId) {
-        setActiveDoc(detail);
-        if (detail.status === "error") setError(detail.error || "Parse failed");
-      }
+      startPoll(pending.id); // fire-and-forget; setUploading(false) returns immediately
     } catch (e) {
-      if ((e as Error).name !== "AbortError") setError((e as Error).message);
+      setError((e as Error).message);
     } finally {
       setUploading(false);
     }
@@ -76,29 +85,15 @@ export default function App() {
 
   const reparse = async () => {
     if (!activeDoc) return;
-    pollAbort.current?.abort();
-    const ac = new AbortController();
-    pollAbort.current = ac;
     setReparsing(true);
     setError(null);
     try {
       const pending = await api.reparse(activeDoc.id);
-      const pollId = pending.id;
-      watchingId.current = pollId;
+      watchingId.current = pending.id;
       setActiveDoc(pending);
-      const detail = await api.pollDocument(pollId, {
-        signal: ac.signal,
-        onTick: (d) => {
-          if (watchingId.current === pollId) setActiveDoc(d);
-        },
-      });
-      refreshDocs();
-      if (watchingId.current === pollId) {
-        setActiveDoc(detail);
-        if (detail.status === "error") setError(detail.error || "Parse failed");
-      }
+      startPoll(pending.id);
     } catch (e) {
-      if ((e as Error).name !== "AbortError") setError((e as Error).message);
+      setError((e as Error).message);
     } finally {
       setReparsing(false);
     }

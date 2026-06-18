@@ -6,7 +6,9 @@ in their own ADLS container/prefix in production.
 """
 from __future__ import annotations
 
+import logging
 import re
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,6 +17,8 @@ from typing import Any, Optional
 from .models import Chunk, DocumentDetail, DocumentSummary, Node
 from .parser import parse_document
 from .storage import get_storage
+
+logger = logging.getLogger(__name__)
 
 
 def _now() -> str:
@@ -125,16 +129,18 @@ def parse(doc_id: str) -> DocumentDetail:
 
 
 def parse_safe(doc_id: str) -> None:
-    """Background-task entry point: parse, swallowing errors.
+    """Background-task entry point: parse with timing logs.
 
-    ``parse`` already records ``status="error"`` + message on failure, which the
-    frontend surfaces via polling, so we just suppress the exception here to keep
-    the background worker from logging an unhandled crash.
+    ``parse`` records ``status="error"`` + message on failure; we log it here
+    so it shows up in the Azure log stream alongside timing info.
     """
+    logger.info("[parse] start doc_id=%s", doc_id)
+    t0 = time.monotonic()
     try:
         parse(doc_id)
-    except Exception:
-        pass
+        logger.info("[parse] done doc_id=%s elapsed=%.1fs", doc_id, time.monotonic() - t0)
+    except Exception as exc:
+        logger.error("[parse] failed doc_id=%s elapsed=%.1fs error=%s", doc_id, time.monotonic() - t0, exc)
 
 
 def _persist_nodes(rec: dict[str, Any], nodes: list[Node]) -> str:

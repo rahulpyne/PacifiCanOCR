@@ -1,9 +1,15 @@
 """PacifiCan Parse Studio — FastAPI application entrypoint."""
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings

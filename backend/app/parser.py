@@ -9,13 +9,17 @@ expensive (first call downloads/initialises layout + OCR models).
 """
 from __future__ import annotations
 
+import logging
 import tempfile
+import time
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 from .config import get_settings
 from .models import BBox, Node
+
+logger = logging.getLogger(__name__)
 
 # docling DocItemLabel -> our NodeType
 _LABEL_MAP: dict[str, str] = {
@@ -178,7 +182,13 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
     from docling.datamodel.document import DocumentStream
     import io
 
-    converter = _converter(_resolve_do_ocr(data, filename))
+    t0 = time.monotonic()
+    do_ocr = _resolve_do_ocr(data, filename)
+    logger.info("[docling] filename=%s size=%d bytes do_ocr=%s", filename, len(data), do_ocr)
+
+    converter = _converter(do_ocr)
+    logger.info("[docling] converter ready elapsed=%.1fs", time.monotonic() - t0)
+
     suffix = Path(filename).suffix or ".pdf"
 
     # Prefer the in-memory stream API; fall back to a temp file if unavailable.
@@ -190,6 +200,8 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
             tmp.write(data)
             tmp_path = tmp.name
         result = converter.convert(tmp_path)
+
+    logger.info("[docling] convert done elapsed=%.1fs", time.monotonic() - t0)
 
     doc = result.document
 
@@ -234,4 +246,5 @@ def parse_document(data: bytes, filename: str) -> dict[str, Any]:
     except Exception:
         pages = max((n.page for n in nodes), default=1)
 
+    logger.info("[docling] done pages=%d nodes=%d elapsed=%.1fs", pages, len(nodes), time.monotonic() - t0)
     return {"nodes": nodes, "pages": int(pages or 1)}
